@@ -1,9 +1,9 @@
-import { ApolloServer } from "@apollo/server/dist/esm/ApolloServer";
+import { ApolloServer } from "@apollo/server";
 import { User } from "./user";
 import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
-export function createApolloGraphqlServer() {
+async function createApolloGraphqlServer() {
     const gqlServer = new ApolloServer({
         typeDefs: `#graphql
         type Query {
@@ -22,4 +22,8 @@ export function createApolloGraphqlServer() {
             }
         },
     })
+    await gqlServer.start();
+    return gqlServer
 }
+
+export default createApolloGraphqlServer;
