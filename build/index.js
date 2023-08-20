@@ -14,9 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const express4_1 = require("@apollo/server/express4");
-const client_1 = require("@prisma/client");
 const graphql_1 = __importDefault(require("./graphql"));
-const prisma = new client_1.PrismaClient();
+const database_1 = __importDefault(require("./config/database"));
+(0, database_1.default)();
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {

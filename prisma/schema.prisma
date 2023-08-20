@@ -15,6 +15,16 @@ model User {
   email    String @unique
   name     String?
   password String
+  tweets   Tweet[]
 
   @@map("user")
+}
+
+model Tweet {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  author     User      @relation(fields: [authorId], references: [id])
+  authorId   String    @db.ObjectId
+  body       String    
+  files      String[]    
+
 }

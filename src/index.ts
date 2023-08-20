@@ -1,10 +1,10 @@
-import { ApolloServer } from "@apollo/server";
 import express, {Express} from "express";
 import { expressMiddleware } from '@apollo/server/express4';
 import { PrismaClient } from '@prisma/client'
 import createApolloGraphqlServer from "./graphql";
+import connect from "./config/database";
 
-const prisma = new PrismaClient()
+connect()
 
 const app: Express = express();
 
