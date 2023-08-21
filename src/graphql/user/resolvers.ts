@@ -1,7 +1,6 @@
 import User from "../../models/User";
-import prisma from "../../prisma";
 const mutation = {
-    createUser: async (_: any, {name, email, password}: {name: string; email: string, password: string})=> {
+    createUser: async (_: any, {name, email, password}: {name: string, email: string, password: string})=> {
         console.log(name, email, password)
         let newUser = await User.create({
             name, password, email
@@ -15,7 +14,26 @@ const mutation = {
 
 const queries =  {
     hello: ()=>"Hello",
-    say: (_: any, {name}: {name: string})=> `Name is ${name}`
+
+    say: (_: any, {name}: {name: string})=> `Name is ${name}`,
+
+    fetchUsers: async ()=>{
+        const users = await User.find({});
+        console.log(users)
+        return users
+    },
+
+    fetchUserWithId: async (_: any, {id}: {id: string}) => {
+        console.log(id);
+        try{
+            const user = await User.findById(id);
+            return user
+        }
+        catch(err) {
+            return err
+        }
+    }
+    
 }
 
 export const Resolvers = {mutation, queries};

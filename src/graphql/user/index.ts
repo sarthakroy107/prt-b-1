@@ -1,5 +1,5 @@
-import { typeDefs } from "./typedefs";
-import { Resolvers } from "./resolvers";
+import { typeDefs } from "./typedefs"
+import { Resolvers } from "./resolvers"
 import { Mutation } from "./mutation";
 import { Queries } from "./queries";
 

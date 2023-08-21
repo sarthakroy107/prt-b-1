@@ -28,6 +28,21 @@ const mutation = {
 };
 const queries = {
     hello: () => "Hello",
-    say: (_, { name }) => `Name is ${name}`
+    say: (_, { name }) => `Name is ${name}`,
+    fetchUsers: () => __awaiter(void 0, void 0, void 0, function* () {
+        const users = yield User_1.default.find({});
+        console.log(users);
+        return users;
+    }),
+    fetchUserWithId: (_, { id }) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(id);
+        try {
+            const user = yield User_1.default.findById(id);
+            return user;
+        }
+        catch (err) {
+            return err;
+        }
+    })
 };
 exports.Resolvers = { mutation, queries };

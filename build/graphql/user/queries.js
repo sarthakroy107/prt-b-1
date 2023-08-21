@@ -4,4 +4,6 @@ exports.Queries = void 0;
 exports.Queries = `#graphql
     hello: String
     say(name: String!): String
+    fetchUsers: [User]
+    fetchUserWithId(id: String!): User
 `;

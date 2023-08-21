@@ -17,7 +17,7 @@ const UserSchema: Schema = new mongoose.Schema({
     },
     profileImageUrl: {
         type: String,
-        default: "https://res.cloudinary.com/dx2nblvo7/image/upload/v1689175938/umimcqeipkpowe4k3i5k.jpg"
+        default: "https://static.animecorner.me/2023/01/onimai-episode-2-1.jpg"
     },
     bio:{
         type: String,
