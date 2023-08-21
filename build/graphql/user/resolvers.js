@@ -13,19 +13,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Resolvers = void 0;
-const prisma_1 = __importDefault(require("../../prisma"));
+const User_1 = __importDefault(require("../../models/User"));
 const mutation = {
     createUser: (_, { name, email, password }) => __awaiter(void 0, void 0, void 0, function* () {
-        yield prisma_1.default.user.create({
-            data: {
-                name, password, email
-            }
+        console.log(name, email, password);
+        let newUser = yield User_1.default.create({
+            name, password, email
         });
-        return true;
+        console.log(newUser);
+        // newUser._id = null
+        // newUser.password = undefined
+        return newUser;
     })
 };
 const queries = {
     hello: () => "Hello",
-    say: (_, { name }) => `Namw is ${name}`
+    say: (_, { name }) => `Name is ${name}`
 };
 exports.Resolvers = { mutation, queries };

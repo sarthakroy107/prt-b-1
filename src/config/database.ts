@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 // require("dotenv").config();
-
+require("dotenv").config()
+console.log(process.env.DATABASE_URL)
 const connect = () => {
-    mongoose.connect("mongodb+srv://ag2558:amiya1234567890@cluster0.goggn0v.mongodb.net/twitterclone", {
+    mongoose.connect(process.env.DATABASE_URL, {
         useNewUrlParser: true,
         useUnifiedTopology:true,
     })

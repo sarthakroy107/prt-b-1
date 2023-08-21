@@ -6,6 +6,7 @@ const prisma = new PrismaClient()
 async function createApolloGraphqlServer() {
     const gqlServer = new ApolloServer({
         typeDefs: `#graphql
+        ${User.typeDefs}
         type Query {
             ${User.Queries}
         }
