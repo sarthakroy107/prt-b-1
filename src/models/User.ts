@@ -38,7 +38,11 @@ const UserSchema: Schema = new mongoose.Schema({
     blue:{
         type: Boolean,
         default: false
-    }
+    },
+    token: {
+        type: String,
+        default: "dummy_string"
+    },
 }, {timestamps: true})
 
 const User =   mongoose.model("User", UserSchema);

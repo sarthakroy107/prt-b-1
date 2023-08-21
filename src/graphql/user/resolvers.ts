@@ -1,14 +1,27 @@
 import User from "../../models/User";
+const bcrypt = require('bcrypt')
+const jwt = require("jsonwebtoken")
+require('dotenv').config()
+
 const mutation = {
     createUser: async (_: any, {name, email, password}: {name: string, email: string, password: string})=> {
-        console.log(name, email, password)
-        let newUser = await User.create({
-            name, password, email
-        })
-        console.log(newUser)
-        // newUser._id = null
-        // newUser.password = undefined
-        return newUser
+        try {
+            
+            const userAlreadyExists = await User.findOne({email})
+
+            if(userAlreadyExists) return new Error("User aalready exists")
+            
+            const encryptedPassword = await bcrypt.hash(password, 10);
+            
+            const newUser = await User.create({
+                name, password: encryptedPassword, email
+            })
+            
+            return newUser
+        }
+        catch(err) {
+            return new Error("Something went wrong in signup")
+        }
     }
 }
 
@@ -36,9 +49,20 @@ const queries =  {
 
     fetchUserWithEmail:async (_:any, {email, password}: {email: string, password: string}) => {
         try{
+
             const user = await User.findOne({email});
+
             if(!user) return new Error ("User does not exist")
-            if(user.password != password) return new Error("Password does not match")
+
+            if(!bcrypt.compare(password, user.password)) return new Error("Password does not match")
+
+            console.log(process.env.JWT_SECRET)
+
+            const token = jwt.sign({name: user.name, email: user.email}, process.env.JWT_SECRET, {expiresIn: '2h'});
+
+            console.log(process.env.JWT_SECRET)
+            user.password = "I love mahiru"
+            user.token = token
 
             return user
 

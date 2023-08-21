@@ -16,6 +16,7 @@ exports.typeDefs = `#graphql
         blue: Boolean!
         createdAt: String!
         updatedAt: String!
+        token: String
     }
 
     type Tweet {

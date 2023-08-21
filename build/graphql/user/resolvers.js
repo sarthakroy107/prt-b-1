@@ -14,16 +14,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Resolvers = void 0;
 const User_1 = __importDefault(require("../../models/User"));
+const bcrypt = require('bcrypt');
+const jwt = require("jsonwebtoken");
+require('dotenv').config();
 const mutation = {
     createUser: (_, { name, email, password }) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log(name, email, password);
-        let newUser = yield User_1.default.create({
-            name, password, email
-        });
-        console.log(newUser);
-        // newUser._id = null
-        // newUser.password = undefined
-        return newUser;
+        try {
+            const userAlreadyExists = yield User_1.default.findOne({ email });
+            if (userAlreadyExists)
+                return new Error("User aalready exists");
+            const encryptedPassword = yield bcrypt.hash(password, 10);
+            const newUser = yield User_1.default.create({
+                name, password: encryptedPassword, email
+            });
+            return newUser;
+        }
+        catch (err) {
+            return new Error("Something went wrong in signup");
+        }
     })
 };
 const queries = {
@@ -49,8 +57,13 @@ const queries = {
             const user = yield User_1.default.findOne({ email });
             if (!user)
                 return new Error("User does not exist");
-            if (user.password != password)
+            if (!bcrypt.compare(password, user.password))
                 return new Error("Password does not match");
+            console.log(process.env.JWT_SECRET);
+            const token = jwt.sign({ name: user.name, email: user.email }, process.env.JWT_SECRET, { expiresIn: '2h' });
+            console.log(process.env.JWT_SECRET);
+            user.password = "I love mahiru";
+            user.token = token;
             return user;
         }
         catch (err) {
