@@ -32,6 +32,20 @@ const queries =  {
         catch(err) {
             return err
         }
+    },
+
+    fetchUserWithEmail:async (_:any, {email, password}: {email: string, password: string}) => {
+        try{
+            const user = await User.findOne({email});
+            if(!user) return new Error ("User does not exist")
+            if(user.password != password) return new Error("Password does not match")
+
+            return user
+
+        }
+        catch(err) {
+            return err
+        }
     }
     
 }

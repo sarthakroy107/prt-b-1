@@ -43,6 +43,19 @@ const queries = {
         catch (err) {
             return err;
         }
+    }),
+    fetchUserWithEmail: (_, { email, password }) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const user = yield User_1.default.findOne({ email });
+            if (!user)
+                return new Error("User does not exist");
+            if (user.password != password)
+                return new Error("Password does not match");
+            return user;
+        }
+        catch (err) {
+            return err;
+        }
     })
 };
 exports.Resolvers = { mutation, queries };
