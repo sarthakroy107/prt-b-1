@@ -64,6 +64,7 @@ const queries = {
             console.log(process.env.JWT_SECRET);
             user.password = "I love mahiru";
             user.token = token;
+            //res.cookie('token', token, {httpOnly: true, maxAge: 1000*60*60*24*7})
             return user;
         }
         catch (err) {
