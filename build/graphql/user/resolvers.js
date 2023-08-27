@@ -65,6 +65,18 @@ const queries = {
             user.password = "I love mahiru";
             user.token = token;
             //res.cookie('token', token, {httpOnly: true, maxAge: 1000*60*60*24*7})
+            // context.setCookies.push({
+            //     name: "token",
+            //     value: token,
+            //     options: {
+            //         domain:'DOMAIN_NAME',
+            //         httpOnly: true,
+            //         maxAge: 36000,
+            //         secure: 'none',
+            //         path: '/',
+            //         sameSite:'None'
+            //     }
+            // });
             return user;
         }
         catch (err) {
