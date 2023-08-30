@@ -5,4 +5,5 @@ export const Queries = `#graphql
     fetchUsers: [User]
     fetchUserWithId(id: String!): User
     fetchUserWithEmail(email: String!, password: String!): User
+    userLogin(email: String!, password:String!): User
 `

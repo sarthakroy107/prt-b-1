@@ -26,7 +26,6 @@ app.use(express_1.default.json());
 const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {
     app.use("/graphql", (0, express4_1.expressMiddleware)(yield (0, graphql_1.default)(), {
         context: ({ req }) => __awaiter(void 0, void 0, void 0, function* () {
-            // @ts-ignore
             const token = req.headers["Authorization"];
             try {
                 const user = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);

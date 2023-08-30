@@ -20,7 +20,7 @@ const gqlFunc = async () =>{
         "/graphql",
         expressMiddleware(await createApolloGraphqlServer(), {
           context: async ({ req }) => {
-            // @ts-ignore
+            
             const token = req.headers["Authorization"];
     
             try {

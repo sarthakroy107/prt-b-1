@@ -32,7 +32,7 @@ const mutation = {
         catch (err) {
             return new Error("Something went wrong in signup");
         }
-    })
+    }),
 };
 const queries = {
     hello: () => "Hello",
@@ -81,6 +81,31 @@ const queries = {
         }
         catch (err) {
             return err;
+        }
+    }),
+    userLogin: (_, { email, password }) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const account = yield User_1.default.findOne({ email });
+            if (!account)
+                return new Error("User not found");
+            if (!bcrypt.compare(password, account.password))
+                return new Error("Password do not match");
+            const payload = {
+                email: account.email,
+                id: account._id
+            };
+            try {
+                const token = jwt.sign(payload, process.env.JWT_SECRET);
+                account.token = token;
+                account.password = null;
+                return account;
+            }
+            catch (error) {
+                throw new Error("Token generation failed");
+            }
+        }
+        catch (error) {
+            console.log(error);
         }
     })
 };
