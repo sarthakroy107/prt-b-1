@@ -83,7 +83,8 @@ const queries =  {
                 id: account._id
             }
             try {
-                const token = jwt.sign(payload, process.env.JWT_SECRET!);
+                console.log(process.env.JWT_SECRET)
+                const token = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "72h" });
                 account.token = token;
                 return account;
             } catch (error) {

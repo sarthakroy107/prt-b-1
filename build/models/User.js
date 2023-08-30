@@ -23,6 +23,10 @@ const UserSchema = new mongoose_1.default.Schema({
         type: String,
         default: "https://static.animecorner.me/2023/01/onimai-episode-2-1.jpg"
     },
+    banner: {
+        type: String,
+        default: "https://pbs.twimg.com/profile_banners/1658081615069999104/1691591327/1500x500"
+    },
     bio: {
         type: String,
         maxLength: 100

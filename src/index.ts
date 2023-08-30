@@ -9,6 +9,8 @@ import JWT from "jsonwebtoken";
 require('dotenv').config()
 connect()
 
+const authRoutes = require('./routes/authRoute')
+
 const app: Express = express();
 
 app.use(cors());
@@ -36,7 +38,7 @@ const gqlFunc = async () =>{
     app.get('/', (req, res)=>{
         return res.send("Sever is running")
     })
-    
+    app.use('/api/v1', authRoutes)
     app.listen(8000, ()=>{
         console.log("Server is up and running");
     })

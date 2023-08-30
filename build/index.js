@@ -20,6 +20,7 @@ const cors_1 = __importDefault(require("cors"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 require('dotenv').config();
 (0, database_1.default)();
+const authRoutes = require('./routes/authRoute');
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
@@ -39,6 +40,7 @@ const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {
     app.get('/', (req, res) => {
         return res.send("Sever is running");
     });
+    app.use('/api/v1', authRoutes);
     app.listen(8000, () => {
         console.log("Server is up and running");
     });
