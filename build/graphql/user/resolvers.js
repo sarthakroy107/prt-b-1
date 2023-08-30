@@ -64,19 +64,6 @@ const queries = {
             console.log(process.env.JWT_SECRET);
             user.password = "I love mahiru";
             user.token = token;
-            //res.cookie('token', token, {httpOnly: true, maxAge: 1000*60*60*24*7})
-            // context.setCookies.push({
-            //     name: "token",
-            //     value: token,
-            //     options: {
-            //         domain:'DOMAIN_NAME',
-            //         httpOnly: true,
-            //         maxAge: 36000,
-            //         secure: 'none',
-            //         path: '/',
-            //         sameSite:'None'
-            //     }
-            // });
             return user;
         }
         catch (err) {
@@ -85,9 +72,10 @@ const queries = {
     }),
     userLogin: (_, { email, password }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
+            console.log("userLogin called");
             const account = yield User_1.default.findOne({ email });
             if (!account)
-                return new Error("User not found");
+                throw new Error("User not found");
             if (!bcrypt.compare(password, account.password))
                 return new Error("Password do not match");
             const payload = {
@@ -97,7 +85,6 @@ const queries = {
             try {
                 const token = jwt.sign(payload, process.env.JWT_SECRET);
                 account.token = token;
-                account.password = null;
                 return account;
             }
             catch (error) {
