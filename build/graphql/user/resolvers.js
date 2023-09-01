@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Resolvers = void 0;
+exports.UserResolvers = void 0;
 const User_1 = __importDefault(require("../../models/User"));
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
@@ -72,7 +72,7 @@ const queries = {
     }),
     userLogin: (_, { email, password }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            console.log("userLogin called");
+            console.log("userLogin called through graphql");
             const account = yield User_1.default.findOne({ email });
             if (!account)
                 throw new Error("User not found");
@@ -97,4 +97,4 @@ const queries = {
         }
     })
 };
-exports.Resolvers = { mutation, queries };
+exports.UserResolvers = { mutation, queries };

@@ -74,7 +74,7 @@ const queries =  {
 
     userLogin: async (_:any, {email, password}: {email: string, password: string}) => {
         try {
-            console.log("userLogin called")
+            console.log("userLogin called through graphql")
             const account = await User.findOne({email});
             if(!account) throw new Error("User not found");
             if(!bcrypt.compare(password, account.password)) return new Error("Password do not match");
@@ -98,4 +98,4 @@ const queries =  {
     
 }
 
-export const Resolvers = {mutation, queries};
+export const UserResolvers = {mutation, queries};

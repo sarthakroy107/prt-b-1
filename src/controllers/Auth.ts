@@ -8,7 +8,7 @@ export const userLogin = async (req: Request, res: Response) => {
     const {email, password}: {email: string, password: string} = req.body;
 
     try {
-        console.log("userLogin called")
+        console.log("userLogin called throuh REST")
         const account = await User.findOne({email});
         if(!account) throw new Error("User not found");
         if(!bcrypt.compare(password, account.password)) return new Error("Password do not match");

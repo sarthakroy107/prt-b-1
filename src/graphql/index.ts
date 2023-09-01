@@ -1,6 +1,7 @@
 import { ApolloServer } from "@apollo/server";
 import { User } from "./user";
 import { PrismaClient } from '@prisma/client'
+import { Auth } from "./auth";
 const prisma = new PrismaClient()
 
 async function createApolloGraphqlServer() {
@@ -9,17 +10,21 @@ async function createApolloGraphqlServer() {
         ${User.typeDefs}
         type Query {
             ${User.Queries}
+            ${Auth.Queries}
         }
         type Mutation {
             ${User.Mutation}
+            ${Auth.Mutation}
         }
         `,
         resolvers: {
             Query: {
-                ...User.Resolvers.queries
+                ...User.UserResolvers.queries,
+                ...Auth.AuthResolver.queries
             },
             Mutation: {
-                ...User.Resolvers.mutation
+                ...User.UserResolvers.mutation,
+                ...Auth.AuthResolver.mutation
             }
         },
     })

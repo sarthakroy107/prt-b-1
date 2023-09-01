@@ -19,7 +19,7 @@ const User_1 = __importDefault(require("../models/User"));
 const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     try {
-        console.log("userLogin called");
+        console.log("userLogin called throuh REST");
         const account = yield User_1.default.findOne({ email });
         if (!account)
             throw new Error("User not found");
