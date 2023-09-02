@@ -37,3 +37,27 @@ export const userLogin = async (req: Request, res: Response) => {
         console.log(error)
     }
 }
+
+export const checkUsernameavailability = async (req: Request, res: Response) => {
+    const {username}: {username: string} = req.body;
+
+    try {
+        console.log(req.body)
+        const user = await User.findOne({username});
+        if(user) {
+            return res.status(200).json({
+                success: true,
+                data: false
+            })
+        }
+        return res.status(200).json({
+            success: true,
+            data: true
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message:" something went wrong"
+        })
+    }
+}

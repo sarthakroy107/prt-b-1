@@ -1,20 +1,23 @@
 import User from "../../models/User";
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken")
+import { GraphQLError } from 'graphql';
 require('dotenv').config()
 
 const mutation = {
-    createUser: async (_: any, {name, email, password}: {name: string, email: string, password: string})=> {
+    createUser: async (_: any, {name, email, password, username}: {name: string, email: string, password: string, username: string})=> {
         try {
             
-            const userAlreadyExists = await User.findOne({email})
+            const userAlreadyExists = await User.findOne({email});
+            if(userAlreadyExists) throw new GraphQLError("USer already exists");
 
-            if(userAlreadyExists) return new Error("User aalready exists")
+            const usernameAccountExists = await User.findOne({username});
+            if(usernameAccountExists) throw new GraphQLError("Username alreay taken");
             
             const encryptedPassword = await bcrypt.hash(password, 10);
             
             const newUser = await User.create({
-                name, password: encryptedPassword, email
+                name, password: encryptedPassword, email, username
             })
             
             return newUser

@@ -19,6 +19,11 @@ const UserSchema = new mongoose_1.default.Schema({
         type: String,
         required: true
     },
+    username: {
+        type: String,
+        required: true,
+        unique: true
+    },
     profileImageUrl: {
         type: String,
         default: "https://static.animecorner.me/2023/01/onimai-episode-2-1.jpg"

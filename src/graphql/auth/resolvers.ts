@@ -42,7 +42,17 @@ const mutation = {
 
 }
 const queries = {
-
+    usernameAvailability: async(_: any, {username}:{username:string}) => {
+        console.log(username);
+        try {
+            const available = await User.findOne({username});
+            if(available) return false;
+            return true;
+        }
+        catch(err) {
+            throw new GraphQLError("Somethhing went wrong while checking username");
+        }
+    }
 }
 
 export const AuthResolver = {mutation, queries};

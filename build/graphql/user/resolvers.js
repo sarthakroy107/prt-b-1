@@ -16,16 +16,20 @@ exports.UserResolvers = void 0;
 const User_1 = __importDefault(require("../../models/User"));
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
+const graphql_1 = require("graphql");
 require('dotenv').config();
 const mutation = {
-    createUser: (_, { name, email, password }) => __awaiter(void 0, void 0, void 0, function* () {
+    createUser: (_, { name, email, password, username }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const userAlreadyExists = yield User_1.default.findOne({ email });
             if (userAlreadyExists)
-                return new Error("User aalready exists");
+                throw new graphql_1.GraphQLError("USer already exists");
+            const usernameAccountExists = yield User_1.default.findOne({ username });
+            if (usernameAccountExists)
+                throw new graphql_1.GraphQLError("Username alreay taken");
             const encryptedPassword = yield bcrypt.hash(password, 10);
             const newUser = yield User_1.default.create({
-                name, password: encryptedPassword, email
+                name, password: encryptedPassword, email, username
             });
             return newUser;
         }

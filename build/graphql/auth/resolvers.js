@@ -56,5 +56,18 @@ const mutation = {
         }
     })
 };
-const queries = {};
+const queries = {
+    usernameAvailability: (_, { username }) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(username);
+        try {
+            const available = yield User_1.default.findOne({ username });
+            if (available)
+                return false;
+            return true;
+        }
+        catch (err) {
+            throw new graphql_1.GraphQLError("Somethhing went wrong while checking username");
+        }
+    })
+};
 exports.AuthResolver = { mutation, queries };

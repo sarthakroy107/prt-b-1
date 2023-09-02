@@ -8,6 +8,7 @@ exports.typeDefs = `#graphql
         name: String!
         email: String!
         password: String!
+        username: String!
         profileImageUrl: String
         bio: String
         tweets: [Tweet]
