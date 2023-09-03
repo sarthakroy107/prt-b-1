@@ -18,37 +18,48 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const graphql_1 = require("graphql");
 const otp = require('otp-generator');
 const mutation = {
-    authWidhAuthenticatedProvider: (_, { email, name }) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log(email, name);
-        const user = yield User_1.default.findOne({ email });
-        const randomPassword = otp.generate(8, {
-            upperCaseAlphabets: true,
-            lowerCaseAlphabets: true,
-            specialChars: true,
-        });
-        const encryptedPassword = yield bcrypt_1.default.hash(randomPassword, 10);
-        if (!user) {
-            try {
-                console.log("Creating user, password: ", encryptedPassword);
-                const newUser = yield User_1.default.create({ email, password: encryptedPassword, name });
-                return newUser;
-            }
-            catch (error) {
-                throw new graphql_1.GraphQLError("User not registered and user generation failed");
-            }
-        }
-        return user;
-    }),
-    registerWithAuthentication: (_, { email, name, password }) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log(email, name, password);
+    registerWidhAuthenticatedProvider: (_, { email, name, username }) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("registerWidhAuthenticatedProvide: ", email, name, username);
+        const userWithEmail = yield User_1.default.findOne({ email });
+        if (userWithEmail)
+            throw new graphql_1.GraphQLError("User with same email already exists");
+        const userWithUsername = yield User_1.default.findOne({ username });
+        if (userWithUsername)
+            throw new graphql_1.GraphQLError("User with same username already exists");
+        let encryptedPassword;
         try {
-            const existingUser = yield User_1.default.findOne({ email });
-            console.log("hello", existingUser);
-            if (existingUser)
-                throw new graphql_1.GraphQLError("User already exists");
+            const randomPassword = otp.generate(8, {
+                upperCaseAlphabets: true,
+                lowerCaseAlphabets: true,
+                specialChars: false,
+            });
+            console.log(randomPassword);
+            encryptedPassword = yield bcrypt_1.default.hash(randomPassword, 10);
+        }
+        catch (error) {
+            throw new graphql_1.GraphQLError("Encrypted password generation failed");
+        }
+        try {
+            console.log("Creating user, password: ", encryptedPassword);
+            const newUser = yield User_1.default.create({ email, password: encryptedPassword, name, username });
+            return newUser;
+        }
+        catch (error) {
+            throw new graphql_1.GraphQLError("User not registered and user generation failed");
+        }
+    }),
+    registerWithCredentialsAuthentication: (_, { email, name, password, username }) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(email, name, password, username);
+        try {
+            const userWithSameEmail = yield User_1.default.findOne({ email });
+            if (userWithSameEmail)
+                throw new graphql_1.GraphQLError("User with same EMAIL exists");
+            const userWithSameUsername = yield User_1.default.findOne({ username });
+            if (userWithSameUsername)
+                throw new graphql_1.GraphQLError("User with same USERNAME exists");
             const encryptedPassword = yield bcrypt_1.default.hash(password, 10);
             console.log(encryptedPassword);
-            const user = yield User_1.default.create({ email, password: encryptedPassword, name });
+            const user = yield User_1.default.create({ email, password: encryptedPassword, name, username });
             return user;
         }
         catch (err) {

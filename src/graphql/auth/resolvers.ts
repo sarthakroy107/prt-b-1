@@ -2,37 +2,56 @@ import User from "../../models/User"
 import bcrypt from 'bcrypt'
 import { GraphQLError } from 'graphql';
 const otp = require('otp-generator')
+
+
+
 const mutation = {
-    authWidhAuthenticatedProvider: async (_:any, {email, name}:{email:string, name: string}) => {
-        console.log(email, name)
-        const user = await User.findOne({email});
-        const randomPassword = otp.generate(8, {
-            upperCaseAlphabets:true,
-            lowerCaseAlphabets:true,
-            specialChars:true,
-        });
+
+    registerWidhAuthenticatedProvider: async (_:any, {email, name, username}:{email:string, name: string, username: string}) => {
+        console.log("registerWidhAuthenticatedProvide: ",email, name, username)
+
+        const userWithEmail = await User.findOne({email});
+        if(userWithEmail) throw new GraphQLError("User with same email already exists");
+        const userWithUsername = await User.findOne({username});
+        if(userWithUsername) throw new GraphQLError("User with same username already exists");
+
+        let encryptedPassword;
         
-        const encryptedPassword = await bcrypt.hash(randomPassword, 10)
-        if(!user) {
-            try {
-                console.log("Creating user, password: ", encryptedPassword)
-                const newUser = await User.create({email, password: encryptedPassword, name})
-                return newUser
-            } catch (error) {
-                throw new GraphQLError("User not registered and user generation failed");
-            }
-        }
-        return user;
-    },
-    registerWithAuthentication: async (_:any, {email, name, password}:{email:string, name: string, password: string}) => {
-        console.log(email, name, password);
         try {
-            const existingUser = await User.findOne({email});
-            console.log("hello", existingUser)
-            if(existingUser) throw new GraphQLError("User already exists");
+            const randomPassword = otp.generate(8, {
+                upperCaseAlphabets:true,
+                lowerCaseAlphabets:true,
+                specialChars:false,
+            });
+            console.log(randomPassword)
+            encryptedPassword = await bcrypt.hash(randomPassword, 10)
+
+        } catch (error) {
+            throw new GraphQLError("Encrypted password generation failed")
+        }   
+        try {
+            console.log("Creating user, password: ", encryptedPassword)
+
+            const newUser = await User.create({email, password: encryptedPassword, name, username})
+            return newUser
+
+        } catch (error) {
+            throw new GraphQLError("User not registered and user generation failed");
+        } 
+    },
+
+    registerWithCredentialsAuthentication: async (_:any, {email, name, password, username}:{email:string, name: string, password: string, username: string}) => {
+        console.log(email, name, password, username);
+        try {
+            const userWithSameEmail = await User.findOne({email});
+            if(userWithSameEmail) throw new GraphQLError("User with same EMAIL exists");
+
+            const userWithSameUsername = await User.findOne({username});
+            if(userWithSameUsername) throw new GraphQLError("User with same USERNAME exists")
+
             const encryptedPassword = await bcrypt.hash(password, 10);
             console.log(encryptedPassword)
-            const user = await User.create({email, password: encryptedPassword, name});
+            const user = await User.create({email, password: encryptedPassword, name, username});
             return user;
         }
         catch(err) {
@@ -41,6 +60,8 @@ const mutation = {
     }
 
 }
+
+
 const queries = {
     usernameAvailability: async(_: any, {username}:{username:string}) => {
         console.log(username);

@@ -1,4 +1,4 @@
 export const Mutation = `#graphql
-    authWidhAuthenticatedProvider(email: String!, name: String!): User
-    registerWithAuthentication(email: String!, name: String!, password: String!): User
+    registerWidhAuthenticatedProvider(email: String!, name: String!, username: String!): User
+    registerWithCredentialsAuthentication(email: String!, name: String!, password: String!, username: String!): User
 `
