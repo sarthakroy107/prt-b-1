@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkUsernameavailability = exports.userLogin = void 0;
+exports.checkUsernameavailability = exports.userDetails = exports.userLogin = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const User_1 = __importDefault(require("../models/User"));
@@ -52,6 +52,23 @@ const userLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.userLogin = userLogin;
+const userDetails = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email } = req.body;
+        const user = yield User_1.default.findOne({ email });
+        return res.json({
+            success: true,
+            data: user
+        });
+    }
+    catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: err
+        });
+    }
+});
+exports.userDetails = userDetails;
 const checkUsernameavailability = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username } = req.body;
     try {

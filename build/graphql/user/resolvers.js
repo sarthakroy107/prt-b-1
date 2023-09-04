@@ -46,14 +46,15 @@ const queries = {
         console.log(users);
         return users;
     }),
-    fetchUserWithId: (_, { id }) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log(id);
+    fetchUserDetailsWithEmail: (_, { email }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const user = yield User_1.default.findById(id);
+            const user = yield User_1.default.findOne({ email });
+            if (!user)
+                throw new graphql_1.GraphQLError(`User with email: ${email} does not exists`);
             return user;
         }
         catch (err) {
-            return err;
+            throw new graphql_1.GraphQLError("Something went wrong in fetchUserDetailsWithEmail");
         }
     }),
     fetchUserWithEmail: (_, { email, password }) => __awaiter(void 0, void 0, void 0, function* () {

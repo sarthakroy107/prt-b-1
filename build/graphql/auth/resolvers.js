@@ -79,6 +79,19 @@ const queries = {
         catch (err) {
             throw new graphql_1.GraphQLError("Somethhing went wrong while checking username");
         }
+    }),
+    loginWidhAuthenticatedProvider: (_, { email }) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("loginWidhAuthenticatedProvider: ", email);
+        try {
+            const user = yield User_1.default.findOne({ email });
+            if (user)
+                return user;
+            else
+                throw new graphql_1.GraphQLError("User not found");
+        }
+        catch (error) {
+            throw new graphql_1.GraphQLError("Something wen wrong in loginWidhAuthenticatedProvider");
+        }
     })
 };
 exports.AuthResolver = { mutation, queries };

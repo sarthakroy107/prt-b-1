@@ -38,6 +38,23 @@ export const userLogin = async (req: Request, res: Response) => {
     }
 }
 
+export const userDetails = async (req: Request, res: Response) => {
+    try {
+        const {email}: {email:string} = req.body;
+        const user = await User.findOne({email});
+        return res.json({
+            success: true,
+            data: user
+        })
+    }
+    catch(err) {
+        return res.status(500).json({
+            success: false,
+            message: err
+        })
+    }
+}
+
 export const checkUsernameavailability = async (req: Request, res: Response) => {
     const {username}: {username: string} = req.body;
 

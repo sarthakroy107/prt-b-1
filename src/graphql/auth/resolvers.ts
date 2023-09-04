@@ -73,6 +73,18 @@ const queries = {
         catch(err) {
             throw new GraphQLError("Somethhing went wrong while checking username");
         }
+    },
+    loginWidhAuthenticatedProvider: async(_:any, {email}:{email: string}) => {
+        console.log("loginWidhAuthenticatedProvider: ",email);
+
+        try {
+            const user = await User.findOne({email});
+            if(user) return user;
+            else throw new GraphQLError("User not found");
+
+        } catch (error) {
+            throw new GraphQLError("Something wen wrong in loginWidhAuthenticatedProvider")
+        }
     }
 }
 

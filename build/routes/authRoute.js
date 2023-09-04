@@ -8,4 +8,5 @@ const Auth_1 = require("../controllers/Auth");
 const router = express_1.default.Router();
 router.post('/login', Auth_1.userLogin);
 router.put('/username-availibility', Auth_1.checkUsernameavailability);
+router.put("/user-details", Auth_1.userDetails);
 module.exports = router;

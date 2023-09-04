@@ -40,14 +40,15 @@ const queries =  {
         return users
     },
 
-    fetchUserWithId: async (_: any, {id}: {id: string}) => {
-        console.log(id);
+    fetchUserDetailsWithEmail: async (_: any, {email}: {email: string}) => {
+        
         try{
-            const user = await User.findById(id);
-            return user
+            const user = await User.findOne({email});
+            if(!user) throw new GraphQLError(`User with email: ${email} does not exists`);
+            return user;
         }
         catch(err) {
-            return err
+            throw new GraphQLError("Something went wrong in fetchUserDetailsWithEmail")
         }
     },
 

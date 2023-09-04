@@ -5,7 +5,7 @@ exports.Queries = `#graphql
     hello: String
     say(name: String!): String
     fetchUsers: [User]
-    fetchUserWithId(id: String!): User
+    fetchUserDetailsWithEmail(email: String!): User
     fetchUserWithEmail(email: String!, password: String!): User
     userLogin(email: String!, password:String!): User
 `;
