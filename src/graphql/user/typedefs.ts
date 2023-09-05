@@ -6,11 +6,16 @@ export const typeDefs = `#graphql
         email: String!
         password: String!
         username: String!
-        profileImageUrl: String
+        profileImageUrl: String!
+        banner: String!
         bio: String
         tweets: [Tweet]
         likes: [String]
         replies: [Tweet]
+        followers: [User]
+        following: [User]
+        followersCount: Int!
+        followingCount: Int!
         blue: Boolean!
         createdAt: String!
         updatedAt: String!

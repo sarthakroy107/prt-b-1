@@ -51,7 +51,8 @@ const mutation = {
             console.log("Creating user, password: ", encryptedPassword)
             const profileImageUrl:string = getPrifilePic();
 
-            const newUser = await User.create({email, password: encryptedPassword, name, username, profileImageUrl})
+            const newUser = await User.create({email, password: encryptedPassword, name, username, profileImageUrl});
+            console.log(newUser)
             return newUser
 
         } catch (error) {

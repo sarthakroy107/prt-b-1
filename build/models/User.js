@@ -52,6 +52,20 @@ const UserSchema = new mongoose_1.default.Schema({
         type: Boolean,
         default: false
     },
+    followers: {
+        type: mongoose_1.default.Schema.Types.ObjectId
+    },
+    following: [{
+            type: mongoose_1.default.Schema.Types.ObjectId
+        }],
+    followersCount: {
+        type: Number,
+        default: 0
+    },
+    followingCount: {
+        type: Number,
+        default: 0
+    },
     token: {
         type: String,
         default: "dummy_string"

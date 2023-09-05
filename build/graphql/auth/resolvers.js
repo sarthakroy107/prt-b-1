@@ -60,6 +60,7 @@ const mutation = {
             console.log("Creating user, password: ", encryptedPassword);
             const profileImageUrl = getPrifilePic();
             const newUser = yield User_1.default.create({ email, password: encryptedPassword, name, username, profileImageUrl });
+            console.log(newUser);
             return newUser;
         }
         catch (error) {
