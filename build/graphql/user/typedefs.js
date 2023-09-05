@@ -18,6 +18,7 @@ exports.typeDefs = `#graphql
         createdAt: String!
         updatedAt: String!
         token: String
+        tweetCount: Int!
     }
 
     type Tweet {

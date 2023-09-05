@@ -56,6 +56,10 @@ const UserSchema = new mongoose_1.default.Schema({
         type: String,
         default: "dummy_string"
     },
+    tweetCount: {
+        type: Number,
+        default: 0,
+    },
 }, { timestamps: true });
 const User = mongoose_1.default.model("User", UserSchema);
 exports.default = User;

@@ -17,6 +17,23 @@ const User_1 = __importDefault(require("../../models/User"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const graphql_1 = require("graphql");
 const otp = require('otp-generator');
+const profilePics = [
+    "https://res.cloudinary.com/dx2nblvo7/image/upload/v1690264156/mvare5hikfggu642zhcr.png",
+    "https://res.cloudinary.com/dx2nblvo7/image/upload/v1690264139/x9zi5xfpaw1ynxazchid.jpg",
+    "https://res.cloudinary.com/dx2nblvo7/image/upload/v1689836235/nmf1xgwduqrpd4hbxokx.jpg",
+    "https://res.cloudinary.com/dx2nblvo7/image/upload/v1689679236/kbvmtoip85yxucfpgupu.jpg",
+    "https://res.cloudinary.com/dx2nblvo7/image/upload/v1689678546/j5ttdbzfzm6oft8ub0we.jpg",
+    "https://res.cloudinary.com/dx2nblvo7/image/upload/v1689678310/ditztyioy2bhpzf9rf0o.jpg",
+    "https://res.cloudinary.com/dx2nblvo7/image/upload/v1689175938/umimcqeipkpowe4k3i5k.jpg",
+    "https://res.cloudinary.com/dx2nblvo7/image/upload/v1689165981/ydne5iyikkzoisgneh8d.jpg",
+    "https://res.cloudinary.com/dx2nblvo7/image/upload/v1688293365/inmitdaytbzq6i7qeejd.jpg",
+    "https://res.cloudinary.com/dx2nblvo7/image/upload/v1693893888/cb778914-f2dd-4a1f-8a67-1e7aea8adb95_mfx7sd.jpg",
+];
+const getPrifilePic = () => {
+    const num = Math.ceil(Math.random() * (profilePics.length - 1));
+    console.log("Math.random(): ", num);
+    return profilePics[num];
+};
 const mutation = {
     registerWidhAuthenticatedProvider: (_, { email, name, username }) => __awaiter(void 0, void 0, void 0, function* () {
         console.log("registerWidhAuthenticatedProvide: ", email, name, username);
@@ -41,7 +58,8 @@ const mutation = {
         }
         try {
             console.log("Creating user, password: ", encryptedPassword);
-            const newUser = yield User_1.default.create({ email, password: encryptedPassword, name, username });
+            const profileImageUrl = getPrifilePic();
+            const newUser = yield User_1.default.create({ email, password: encryptedPassword, name, username, profileImageUrl });
             return newUser;
         }
         catch (error) {
@@ -59,7 +77,8 @@ const mutation = {
                 throw new graphql_1.GraphQLError("User with same USERNAME exists");
             const encryptedPassword = yield bcrypt_1.default.hash(password, 10);
             console.log(encryptedPassword);
-            const user = yield User_1.default.create({ email, password: encryptedPassword, name, username });
+            const profileImageUrl = getPrifilePic();
+            const user = yield User_1.default.create({ email, password: encryptedPassword, name, username, profileImageUrl });
             return user;
         }
         catch (err) {

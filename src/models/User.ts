@@ -52,6 +52,10 @@ const UserSchema: Schema = new mongoose.Schema({
         type: String,
         default: "dummy_string"
     },
+    tweetCount: {
+        type: Number,
+        default: 0,
+    },
 }, {timestamps: true})
 
 const User =   mongoose.model("User", UserSchema);
