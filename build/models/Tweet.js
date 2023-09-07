@@ -8,16 +8,6 @@ const tweetSchema = new mongoose_1.default.Schema({
     body: {
         type: String,
     },
-    retweeted_from: {
-        type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "Tweet",
-        default: null
-    },
-    parent_tweet: {
-        type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "Tweet",
-        default: null,
-    },
     files: [{
             type: String,
         }],
@@ -37,9 +27,5 @@ const tweetSchema = new mongoose_1.default.Schema({
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "User"
     },
-    createdAt: {
-        type: Date,
-        default: Date.now()
-    }
-});
+}, { timestamps: true });
 module.exports = mongoose_1.default.model("Tweet", tweetSchema);

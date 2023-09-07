@@ -24,15 +24,14 @@ export const typeDefs = `#graphql
     }
 
     type Tweet {
-        _id: String
-        body: String
-        retweeted_from: Tweet
-        parent_tweet: Tweet
+        _id: String!
+        body: String!
         files: [String]
         author: User!
         replies: Tweet
         likes: [String]
         retweet: [Tweet]
-        createdAt: String
+        createdAt: String!
+        updatedAt: String!
     }
 `

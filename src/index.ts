@@ -1,6 +1,5 @@
 import express, {Express} from "express";
 import { expressMiddleware } from '@apollo/server/express4';
-import { PrismaClient } from '@prisma/client'
 import createApolloGraphqlServer from "./graphql";
 import connect from "./config/database";
 import cors from 'cors';
@@ -23,14 +22,15 @@ const gqlFunc = async () =>{
         expressMiddleware(await createApolloGraphqlServer(), {
           context: async ({ req }) => {
             
-            const token = req.headers["Authorization"];
-    
-            try {
-              const user = JWT.verify(token as string, process.env.JWT_SECRET!)
-              return { user };
-            } catch (error) {
-              return {};
-            }
+            const token = req.headers;
+            //console.log("Header token: ",token)
+            // try {
+            //   const user = JWT.verify(token as string, process.env.JWT_SECRET!)
+            //   return { user };
+            // } catch (error) {
+            //   return {};
+            // }
+            return {}
           },
         })
       );

@@ -4,16 +4,6 @@ const tweetSchema =  new mongoose.Schema({
     body: {
         type: String,
     },
-    retweeted_from: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Tweet", 
-        default: null
-    },
-    parent_tweet:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Tweet",
-        default: null,
-    },
     files: [{
         type: String,
     }],
@@ -33,10 +23,6 @@ const tweetSchema =  new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
-    createdAt: {
-        type: Date,
-        default: Date.now()
-    }
-})
+}, {timestamps: true})
 
 module.exports = mongoose.model("Tweet", tweetSchema);

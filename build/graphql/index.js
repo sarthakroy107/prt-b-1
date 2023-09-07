@@ -13,6 +13,7 @@ const server_1 = require("@apollo/server");
 const user_1 = require("./user");
 const client_1 = require("@prisma/client");
 const auth_1 = require("./auth");
+const tweets_1 = require("./tweets");
 const prisma = new client_1.PrismaClient();
 function createApolloGraphqlServer() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -22,15 +23,17 @@ function createApolloGraphqlServer() {
         type Query {
             ${user_1.User.Queries}
             ${auth_1.Auth.Queries}
+            ${tweets_1.Tweet.Queries}
         }
         type Mutation {
             ${user_1.User.Mutation}
             ${auth_1.Auth.Mutation}
+            ${tweets_1.Tweet.Mutation}
         }
         `,
             resolvers: {
-                Query: Object.assign(Object.assign({}, user_1.User.UserResolvers.queries), auth_1.Auth.AuthResolver.queries),
-                Mutation: Object.assign(Object.assign({}, user_1.User.UserResolvers.mutation), auth_1.Auth.AuthResolver.mutation)
+                Query: Object.assign(Object.assign(Object.assign({}, user_1.User.UserResolvers.queries), auth_1.Auth.AuthResolver.queries), tweets_1.Tweet.TweetResolver.queries),
+                Mutation: Object.assign(Object.assign(Object.assign({}, user_1.User.UserResolvers.mutation), auth_1.Auth.AuthResolver.mutation), tweets_1.Tweet.TweetResolver.mutation)
             },
         });
         yield gqlServer.start();
