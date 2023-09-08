@@ -2,5 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Mutation = void 0;
 exports.Mutation = `#graphql
-    createTweet(authorId: String!, body: String, files: [String]): Tweet
+    createTweet(body: String, files: [String]): Tweet
+    deleteTweet(tweetId: String!): Boolean!
 `;

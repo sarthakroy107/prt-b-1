@@ -17,6 +17,7 @@ const express4_1 = require("@apollo/server/express4");
 const graphql_1 = __importDefault(require("./graphql"));
 const database_1 = __importDefault(require("./config/database"));
 const cors_1 = __importDefault(require("cors"));
+const JWT_1 = require("./services/JWT");
 require('dotenv').config();
 (0, database_1.default)();
 const authRoutes = require('./routes/authRoute');
@@ -26,15 +27,18 @@ app.use(express_1.default.json());
 const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {
     app.use("/graphql", (0, express4_1.expressMiddleware)(yield (0, graphql_1.default)(), {
         context: ({ req }) => __awaiter(void 0, void 0, void 0, function* () {
-            const token = req.headers;
+            const token = req.headers["authorization"];
             //console.log("Header token: ",token)
-            // try {
-            //   const user = JWT.verify(token as string, process.env.JWT_SECRET!)
-            //   return { user };
-            // } catch (error) {
-            //   return {};
-            // }
-            return {};
+            try {
+                if (Array.isArray(token))
+                    return {};
+                const user = yield (0, JWT_1.verifyJWT)(token);
+                //console.log("Token user: ", user)
+                return { user };
+            }
+            catch (error) {
+                return {};
+            }
         }),
     }));
     app.get('/', (req, res) => {

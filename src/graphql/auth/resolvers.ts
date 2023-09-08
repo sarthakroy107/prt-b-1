@@ -1,6 +1,7 @@
 import User from "../../models/User"
 import bcrypt from 'bcrypt'
 import { GraphQLError } from 'graphql';
+import { signJWT } from "../../services/JWT";
 const otp = require('otp-generator')
 
 const profilePics: Array<string> = [
@@ -51,9 +52,10 @@ const mutation = {
             console.log("Creating user, password: ", encryptedPassword)
             const profileImageUrl:string = getPrifilePic();
 
-            const newUser = await User.create({email, password: encryptedPassword, name, username, profileImageUrl});
-            console.log(newUser)
-            return newUser
+            const user = await User.create({email, password: encryptedPassword, name, username, profileImageUrl});
+            const token = signJWT(user.email, user._id as string)
+            user.token = token;
+            return user;
 
         } catch (error) {
             throw new GraphQLError("User not registered and user generation failed");
@@ -73,6 +75,8 @@ const mutation = {
             console.log(encryptedPassword)
             const profileImageUrl:string = getPrifilePic();
             const user = await User.create({email, password: encryptedPassword, name, username, profileImageUrl});
+            const token = signJWT(user.email, user._id as string)
+            user.token = token;
             return user;
         }
         catch(err) {
@@ -100,7 +104,13 @@ const queries = {
 
         try {
             const user = await User.findOne({email});
-            if(user) return user;
+            if(user) {
+                const token = signJWT(user.email, user._id as string)
+                console.log("TOKEN:" , token)
+                user.token = token;
+                console.log(user)
+                return user;
+            }
             else throw new GraphQLError("User not found");
 
         } catch (error) {

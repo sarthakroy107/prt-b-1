@@ -4,7 +4,7 @@ import createApolloGraphqlServer from "./graphql";
 import connect from "./config/database";
 import cors from 'cors';
 import { json } from 'body-parser';
-import JWT from "jsonwebtoken";
+import { verifyJWT } from "./services/JWT";
 require('dotenv').config()
 connect()
 
@@ -22,15 +22,17 @@ const gqlFunc = async () =>{
         expressMiddleware(await createApolloGraphqlServer(), {
           context: async ({ req }) => {
             
-            const token = req.headers;
+            const token: string | string[] | undefined = req.headers["authorization"];
             //console.log("Header token: ",token)
-            // try {
-            //   const user = JWT.verify(token as string, process.env.JWT_SECRET!)
-            //   return { user };
-            // } catch (error) {
-            //   return {};
-            // }
-            return {}
+            try {
+              if(Array.isArray(token)) return {};
+              const user = await verifyJWT(token)
+              //console.log("Token user: ", user)
+              return { user };
+            } 
+            catch (error) {
+              return {};
+            }
           },
         })
       );

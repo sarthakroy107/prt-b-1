@@ -8,14 +8,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TweetResolver = void 0;
+const Tweet_1 = __importDefault(require("../../models/Tweet"));
 const mutation = {
-    createTweet: (_, { authorId, body, files }, context) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log(authorId, body, files);
-        console.log("Hii");
-        console.log(context);
-    })
+    createTweet: (_, { body, files }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        const tweet = yield Tweet_1.default.create({ body, files, author: context.user.id });
+        console.log(tweet);
+        return tweet;
+    }),
+    deleteTweet: (_, { tweetId }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            yield Tweet_1.default.deleteOne({ _id: tweetId });
+            return true;
+        }
+        catch (error) {
+            return false;
+        }
+    }),
 };
 const queries = {};
 exports.TweetResolver = { mutation, queries };

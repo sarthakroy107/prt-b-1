@@ -16,6 +16,7 @@ exports.AuthResolver = void 0;
 const User_1 = __importDefault(require("../../models/User"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const graphql_1 = require("graphql");
+const JWT_1 = require("../../services/JWT");
 const otp = require('otp-generator');
 const profilePics = [
     "https://res.cloudinary.com/dx2nblvo7/image/upload/v1690264156/mvare5hikfggu642zhcr.png",
@@ -59,9 +60,10 @@ const mutation = {
         try {
             console.log("Creating user, password: ", encryptedPassword);
             const profileImageUrl = getPrifilePic();
-            const newUser = yield User_1.default.create({ email, password: encryptedPassword, name, username, profileImageUrl });
-            console.log(newUser);
-            return newUser;
+            const user = yield User_1.default.create({ email, password: encryptedPassword, name, username, profileImageUrl });
+            const token = (0, JWT_1.signJWT)(user.email, user._id);
+            user.token = token;
+            return user;
         }
         catch (error) {
             throw new graphql_1.GraphQLError("User not registered and user generation failed");
@@ -80,6 +82,8 @@ const mutation = {
             console.log(encryptedPassword);
             const profileImageUrl = getPrifilePic();
             const user = yield User_1.default.create({ email, password: encryptedPassword, name, username, profileImageUrl });
+            const token = (0, JWT_1.signJWT)(user.email, user._id);
+            user.token = token;
             return user;
         }
         catch (err) {
@@ -104,8 +108,13 @@ const queries = {
         console.log("loginWidhAuthenticatedProvider: ", email);
         try {
             const user = yield User_1.default.findOne({ email });
-            if (user)
+            if (user) {
+                const token = (0, JWT_1.signJWT)(user.email, user._id);
+                console.log("TOKEN:", token);
+                user.token = token;
+                console.log(user);
                 return user;
+            }
             else
                 throw new graphql_1.GraphQLError("User not found");
         }
