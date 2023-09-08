@@ -48,6 +48,7 @@ tweetSchema.pre("save", function (next) {
             console.log("User: ", user);
             if (user) {
                 user.tweetCount += 1;
+                user.tweets.push(this._id);
                 yield user.save();
             }
             next();
@@ -61,13 +62,16 @@ tweetSchema.pre('deleteOne', function (next) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log("IN POST MIDDLEWARE, deleteOne");
         try {
-            const tweet = yield this.findOne().populate('author');
+            const tweetId = yield this.getFilter()._id;
+            const tweet = yield Tweet.findById(tweetId).populate('author');
             if (tweet && tweet.author) {
-                const user = yield User_1.default.findById(tweet === null || tweet === void 0 ? void 0 : tweet.author);
-                if (user) {
-                    user.tweetCount -= 1;
-                    yield user.save();
-                }
+                const user = tweet.author; // Use the author reference directly
+                //@ts-ignore
+                user.tweets.pull(tweet._id);
+                //@ts-ignore
+                user.tweetCount -= 1;
+                //@ts-ignore
+                yield user.save();
             }
             next();
         }
