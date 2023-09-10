@@ -14,10 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TweetResolver = void 0;
 const Tweet_1 = __importDefault(require("../../models/Tweet"));
+const graphql_1 = require("graphql");
 const mutation = {
     createTweet: (_, { body, files }, context) => __awaiter(void 0, void 0, void 0, function* () {
         const tweet = yield Tweet_1.default.create({ body, files, author: context.user.id });
-        console.log(tweet);
+        //console.log(tweet);
         return tweet;
     }),
     deleteTweet: (_, { tweetId }, context) => __awaiter(void 0, void 0, void 0, function* () {
@@ -30,5 +31,22 @@ const mutation = {
         }
     }),
 };
-const queries = {};
+const queries = {
+    fetchUserTweets: (_, p, context) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(context.user.id);
+        try {
+            const tweets = yield Tweet_1.default.find({ author: context.user.id }).populate('author').sort({ createdAt: -1 });
+            const extendedTweeets = tweets.map((tweet) => {
+                const likeCount = tweet.likes.length;
+                const userHasLiked = tweet.likes.includes(context.user.id);
+                return Object.assign(Object.assign({}, tweet._doc), { likeCount, likes: userHasLiked ? [context.user.id] : [] });
+            });
+            console.log(extendedTweeets);
+            return extendedTweeets;
+        }
+        catch (error) {
+            throw new graphql_1.GraphQLError(`Something went wrong in fetchTweets ${error}`);
+        }
+    })
+};
 exports.TweetResolver = { mutation, queries };

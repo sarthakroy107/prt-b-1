@@ -33,5 +33,6 @@ export const typeDefs = `#graphql
         retweet: [Tweet]
         createdAt: String!
         updatedAt: String!
+        viewsCount: Int!
     }
 `

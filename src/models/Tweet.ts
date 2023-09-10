@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
 import User from "./User";
-import { UserResolvers } from "../graphql/user/resolvers";
-// import User from "./User";
-
 const tweetSchema =  new mongoose.Schema({
     body: {
         type: String,
@@ -26,6 +23,10 @@ const tweetSchema =  new mongoose.Schema({
     retweet:{
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
+    },
+    viewsCount: {
+        type: Number,
+        default: 0
     },
 }, {timestamps: true})
 
@@ -55,7 +56,7 @@ tweetSchema.pre('deleteOne', async function(next) {
         const tweet = await Tweet.findById(tweetId).populate('author');
 
         if (tweet && tweet.author) {
-            const user = tweet.author; // Use the author reference directly
+            const user = tweet.author;
 
             //@ts-ignore
             user.tweets.pull(tweet._id);
@@ -70,5 +71,5 @@ tweetSchema.pre('deleteOne', async function(next) {
     }
 })
 
-const Tweet =   mongoose.model("Tweet", tweetSchema);
+const Tweet = mongoose.model("Tweet", tweetSchema);
 export default Tweet

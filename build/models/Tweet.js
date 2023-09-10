@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const User_1 = __importDefault(require("./User"));
-// import User from "./User";
 const tweetSchema = new mongoose_1.default.Schema({
     body: {
         type: String,
@@ -38,6 +37,10 @@ const tweetSchema = new mongoose_1.default.Schema({
     retweet: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "User"
+    },
+    viewsCount: {
+        type: Number,
+        default: 0
     },
 }, { timestamps: true });
 tweetSchema.pre("save", function (next) {
@@ -65,7 +68,7 @@ tweetSchema.pre('deleteOne', function (next) {
             const tweetId = yield this.getFilter()._id;
             const tweet = yield Tweet.findById(tweetId).populate('author');
             if (tweet && tweet.author) {
-                const user = tweet.author; // Use the author reference directly
+                const user = tweet.author;
                 //@ts-ignore
                 user.tweets.pull(tweet._id);
                 //@ts-ignore

@@ -14,6 +14,7 @@ const profilePics: Array<string> = [
     "https://res.cloudinary.com/dx2nblvo7/image/upload/v1689175938/umimcqeipkpowe4k3i5k.jpg",
     "https://res.cloudinary.com/dx2nblvo7/image/upload/v1689165981/ydne5iyikkzoisgneh8d.jpg",
     "https://res.cloudinary.com/dx2nblvo7/image/upload/v1688293365/inmitdaytbzq6i7qeejd.jpg",
+    "https://pbs.twimg.com/media/F3fNo9ZbAAAfAdN?format=jpg&name=900x900",
     "https://res.cloudinary.com/dx2nblvo7/image/upload/v1693893888/cb778914-f2dd-4a1f-8a67-1e7aea8adb95_mfx7sd.jpg",
 
 ]
