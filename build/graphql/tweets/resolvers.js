@@ -40,6 +40,7 @@ const queries = {
                 const likeCount = tweet.likes.length;
                 const userHasLiked = tweet.likes.includes(context.user.id);
                 return Object.assign(Object.assign({}, tweet._doc), { likeCount, likes: userHasLiked ? [context.user.id] : [] });
+                //return tweets
             });
             console.log(extendedTweeets);
             return extendedTweeets;

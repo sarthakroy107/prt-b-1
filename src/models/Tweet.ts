@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import User from "./User";
+
+
 const tweetSchema =  new mongoose.Schema({
     body: {
         type: String,

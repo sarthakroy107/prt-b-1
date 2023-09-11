@@ -35,4 +35,21 @@ export const typeDefs = `#graphql
         updatedAt: String!
         viewsCount: Int!
     }
+
+    type TweetCard {
+        _id: String!
+        body: String!
+        files: [String]
+        author: User!
+        replies: Tweet
+        likes: [String]
+        retweet: [Tweet]
+        createdAt: String!
+        updatedAt: String!
+        viewsCount: Int!
+        likesCount: Int!
+        replyCount: Int!
+        retweetCount: Int!
+        
+    }
 `

@@ -9,6 +9,7 @@ require('dotenv').config()
 connect()
 
 const authRoutes = require('./routes/authRoute')
+const userRoutes = require('./routes/UserRoutes')
 
 const app: Express = express();
 
@@ -41,6 +42,7 @@ const gqlFunc = async () =>{
         return res.send("Sever is running")
     })
     app.use('/api/v1', authRoutes)
+    app.use('/api/v1', userRoutes)
     app.listen(8000, ()=>{
         console.log("Server is up and running");
     })

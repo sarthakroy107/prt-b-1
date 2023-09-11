@@ -35,6 +35,7 @@ const queries = {
                     likeCount,
                     likes: userHasLiked ? [context.user.id] : [],
                 };
+                //return tweets
             });
     
             console.log(extendedTweeets);

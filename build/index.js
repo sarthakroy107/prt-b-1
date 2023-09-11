@@ -21,6 +21,7 @@ const JWT_1 = require("./services/JWT");
 require('dotenv').config();
 (0, database_1.default)();
 const authRoutes = require('./routes/authRoute');
+const userRoutes = require('./routes/UserRoutes');
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
@@ -45,6 +46,7 @@ const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {
         return res.send("Sever is running");
     });
     app.use('/api/v1', authRoutes);
+    app.use('/api/v1', userRoutes);
     app.listen(8000, () => {
         console.log("Server is up and running");
     });
