@@ -12,27 +12,94 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.likedTweets = void 0;
+exports.unlikeTweets = exports.likeTweets = void 0;
 const User_1 = __importDefault(require("../models/User"));
-const likedTweets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const Tweet_1 = __importDefault(require("../models/Tweet"));
+const likeTweets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { tweetId } = req.body;
         //@ts-ignore
-        const user = console.log(req.user);
-        console.log(tweetId);
-        const result = yield User_1.default.findOneAndUpdate({ _id: user.id }, { $inc: { likes: 1 } }, { new: true });
-        if (!result) {
+        const user = req.user;
+        console.log(user, tweetId);
+        const tweet = yield Tweet_1.default.findById(tweetId);
+        if (!tweet) {
+            return res.status(404).json({
+                success: false,
+                message: "Tweet not found"
+            });
+        }
+        if (tweet.likes.includes(tweetId)) {
+            return res.status(501).json({
+                success: false,
+                message: "Tweet is already liked by the user"
+            });
+        }
+        const acccount = yield User_1.default.findById(user.id);
+        if (!acccount) {
             return res.status(403).json({
                 success: false,
                 message: "User not found"
             });
         }
+        if (acccount.likes.includes(tweetId)) {
+            return res.status(500).json({
+                success: false,
+                message: "User already liked the tweet"
+            });
+        }
+        acccount.likes.push(tweetId);
+        tweet.likes.push(acccount._id);
+        acccount.save();
+        tweet.save();
         return res.status(200).json({
-            success: false,
+            success: true,
             message: "Like added succesfully"
         });
     }
     catch (error) {
+        return res.status(402).json({
+            success: false,
+            message: "Something went wrong in likeTweet"
+        });
     }
 });
-exports.likedTweets = likedTweets;
+exports.likeTweets = likeTweets;
+const unlikeTweets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { tweetId } = req.body;
+        //@ts-ignore
+        const user = yield req.user;
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "You are not authorized to unlike tweets"
+            });
+        }
+        const isLiked = yield User_1.default.findById(user.id).select("likes");
+        if (!isLiked) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        if (!isLiked.likes.includes(tweetId)) {
+            return res.status(400).json({
+                success: false,
+                message: "You have not liked this tweet"
+            });
+        }
+        yield User_1.default.updateOne({ _id: user.id }, { $pull: { likes: tweetId } });
+        yield Tweet_1.default.updateOne({ _id: tweetId }, { $pull: { likes: user.id } });
+        return res.status(200).json({
+            success: true,
+            message: "Tweet unliked successfully"
+        });
+    }
+    catch (error) {
+        return res.status(402).json({
+            success: false,
+            message: "Something went wrong in unlikeTweet"
+        });
+    }
+});
+exports.unlikeTweets = unlikeTweets;

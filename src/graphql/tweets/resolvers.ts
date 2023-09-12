@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Tweet from "../../models/Tweet";
 import { GraphQLError } from 'graphql';
 
@@ -19,10 +20,9 @@ const mutation = {
 
 const queries = {
     fetchUserTweets: async(_: any, p: any, context: any) => {
-        console.log(context.user.id);
+        //console.log(context.user.id);
         try {
             const tweets = await Tweet.find({ author: context.user.id }).populate('author').sort({ createdAt: -1 });
-    
             const extendedTweeets = tweets.map((tweet) => {
 
                 const likeCount = tweet.likes.length;
@@ -35,12 +35,49 @@ const queries = {
                     likeCount,
                     likes: userHasLiked ? [context.user.id] : [],
                 };
-                //return tweets
             });
+
+            const newTweets = await Tweet.aggregate([
+                {
+                  $match: { author: new mongoose.Types.ObjectId(context.user.id) }
+                },
+                {
+                  $lookup: {
+                    from: 'likes',
+                    localField: '_id',
+                    foreignField: 'tweet',
+                    as: 'likes'
+                  }
+                },
+                {
+                    $lookup: {
+                      from: 'users', 
+                      localField: 'author', 
+                      foreignField: '_id',
+                      as: 'author'
+                    }
+                  },
+                {
+                  $addFields: {
+                    likeCount: { $size: "$likes" },
+                    isLiked: {
+                      $in: [context.user.id, "$likes.user"]
+                    }
+                  }
+                },
+                {
+                    $unwind: "$author" 
+                },
+                {
+                  $sort: { createdAt: -1 }
+                }
+              ]);
+            
+            console.log(newTweets);
+            // console.log(extendedTweeets);
     
-            console.log(extendedTweeets);
-    
-            return extendedTweeets;
+            return newTweets
+            //return extendedTweeets;
         } catch (error) {
             throw new GraphQLError(`Something went wrong in fetchTweets ${error}`);
         }

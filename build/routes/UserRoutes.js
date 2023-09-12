@@ -7,5 +7,6 @@ const express_1 = __importDefault(require("express"));
 const userInteractions_1 = require("../controllers/userInteractions");
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
-router.put("/like-tweet", auth_1.auth, userInteractions_1.likedTweets);
+router.put("/like-tweet", auth_1.auth, userInteractions_1.likeTweets);
+router.put('/unlike-tweet', auth_1.auth, userInteractions_1.unlikeTweets);
 module.exports = router;

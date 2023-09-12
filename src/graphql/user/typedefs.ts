@@ -38,7 +38,7 @@ export const typeDefs = `#graphql
 
     type TweetCard {
         _id: String!
-        body: String!
+        body: String
         files: [String]
         author: User!
         replies: Tweet
@@ -47,9 +47,9 @@ export const typeDefs = `#graphql
         createdAt: String!
         updatedAt: String!
         viewsCount: Int!
-        likesCount: Int!
+        likeCount: Int!
         replyCount: Int!
         retweetCount: Int!
-        
+        isLiked: Boolean!
     }
 `

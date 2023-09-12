@@ -52,13 +52,8 @@ const queries = {
             if (!user)
                 throw new graphql_1.GraphQLError(`User with email: ${email} does not exists`);
             console.log(user);
-            const date = user.createdAt.toString();
-            console.log(date);
-            const newUser = user;
-            newUser.createdAt = date;
-            console.log(newUser.createdAt);
-            console.log(user);
-            return user;
+            const extendedUser = Object.assign(Object.assign({}, user._doc), { followersCount: user.followers.length, followingCount: user.following.length });
+            return extendedUser;
         }
         catch (err) {
             throw new graphql_1.GraphQLError("Something went wrong in fetchUserDetailsWithEmail");

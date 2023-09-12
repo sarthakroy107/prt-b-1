@@ -1,6 +1,8 @@
 import mongoose, { Schema } from "mongoose";
+import { userTypeDef } from "../config/typeConfig";
 
-const UserSchema: Schema = new mongoose.Schema({
+
+const UserSchema: Schema = new mongoose.Schema<userTypeDef>({
     name: {
         type: String,
         required: true,
@@ -48,20 +50,12 @@ const UserSchema: Schema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    followers: {
+    followers: [{
         type: mongoose.Schema.Types.ObjectId
-    },
+    }],
     following: [{
         type: mongoose.Schema.Types.ObjectId
     }],
-    followersCount: {
-        type: Number,
-        default: 0
-    },
-    followingCount: {
-        type: Number,
-        default: 0
-    },
     token: {
         type: String,
         default: "dummy_string"
@@ -72,5 +66,5 @@ const UserSchema: Schema = new mongoose.Schema({
     },
 }, {timestamps: true})
 
-const User =   mongoose.model("User", UserSchema);
+const User = mongoose.model<userTypeDef>("User", UserSchema);
 export default User

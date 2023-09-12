@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import User from "./User";
+import { tweetTypeDef } from "../config/typeConfig";
 
-
-const tweetSchema =  new mongoose.Schema({
+const tweetSchema =  new mongoose.Schema<tweetTypeDef>({
     body: {
         type: String,
     },
@@ -22,10 +22,10 @@ const tweetSchema =  new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     }],
-    retweet:{
+    retweet:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
-    },
+    }],
     viewsCount: {
         type: Number,
         default: 0
@@ -39,7 +39,7 @@ tweetSchema.pre("save", async function(next) {
         const user = await User.findById(this.author);
         console.log("User: ", user)
     
-        if (user) {
+        if(user && !user.tweets.includes(this._id)) {
           user.tweetCount += 1;
           user.tweets.push(this._id)
           await user.save();
@@ -73,5 +73,5 @@ tweetSchema.pre('deleteOne', async function(next) {
     }
 })
 
-const Tweet = mongoose.model("Tweet", tweetSchema);
+const Tweet = mongoose.model<tweetTypeDef>("Tweet", tweetSchema);
 export default Tweet

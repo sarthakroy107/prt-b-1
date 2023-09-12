@@ -34,10 +34,10 @@ const tweetSchema = new mongoose_1.default.Schema({
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: "User"
         }],
-    retweet: {
-        type: mongoose_1.default.Schema.Types.ObjectId,
-        ref: "User"
-    },
+    retweet: [{
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: "User"
+        }],
     viewsCount: {
         type: Number,
         default: 0
@@ -49,7 +49,7 @@ tweetSchema.pre("save", function (next) {
         try {
             const user = yield User_1.default.findById(this.author);
             console.log("User: ", user);
-            if (user) {
+            if (user && !user.tweets.includes(this._id)) {
                 user.tweetCount += 1;
                 user.tweets.push(this._id);
                 yield user.save();

@@ -46,14 +46,14 @@ const queries =  {
             const user = await User.findOne({email});
             if(!user) throw new GraphQLError(`User with email: ${email} does not exists`);
             console.log(user);
-            const date: string = user.createdAt.toString()
-            console.log(date);
-            const newUser  = user;
-            newUser.createdAt = date
-            console.log(newUser.createdAt)
-            console.log(user);
+            const extendedUser = {
+                //@ts-ignore
+                ...user._doc,
+                followersCount: user.followers.length,
+                followingCount: user.following.length,
+            }
 
-            return user;
+            return extendedUser;
         }
         catch(err) {
             throw new GraphQLError("Something went wrong in fetchUserDetailsWithEmail")
