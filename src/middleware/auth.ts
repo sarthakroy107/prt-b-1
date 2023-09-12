@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import { Jwt } from "jsonwebtoken";
 import { verifyJWT } from "../services/JWT";
 require('dotenv').config();
 
@@ -7,6 +6,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const token = req.header("Authorization")!.replace("Bearer ", "");
+        console.log(token)
         if(!token) {
             return res.status(402).json({
                 success: false,

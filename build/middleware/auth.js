@@ -15,6 +15,7 @@ require('dotenv').config();
 const auth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const token = req.header("Authorization").replace("Bearer ", "");
+        console.log(token);
         if (!token) {
             return res.status(402).json({
                 success: false,

@@ -48,14 +48,6 @@ const queries = {
                 },
                 {
                     $lookup: {
-                        from: 'likes',
-                        localField: '_id',
-                        foreignField: 'tweet',
-                        as: 'likes'
-                    }
-                },
-                {
-                    $lookup: {
                         from: 'users',
                         localField: 'author',
                         foreignField: '_id',
@@ -66,7 +58,7 @@ const queries = {
                     $addFields: {
                         likeCount: { $size: "$likes" },
                         isLiked: {
-                            $in: [context.user.id, "$likes.user"]
+                            $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$likes"]
                         }
                     }
                 },

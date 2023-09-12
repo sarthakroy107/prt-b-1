@@ -24,6 +24,12 @@ const authRoutes = require('./routes/authRoute');
 const userRoutes = require('./routes/UserRoutes');
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+});
 app.use(express_1.default.json());
 const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {
     app.use("/graphql", (0, express4_1.expressMiddleware)(yield (0, graphql_1.default)(), {
