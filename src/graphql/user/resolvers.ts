@@ -60,6 +60,26 @@ const queries =  {
         }
     },
 
+    fetchUserDetailsWithUsername: async (_: any, {username}: {username: string}) => {
+        
+        try{
+            const user = await User.findOne({username});
+            if(!user) throw new GraphQLError(`User with email: ${username} does not exists`);
+            console.log(user);
+            const extendedUser = {
+                //@ts-ignore
+                ...user._doc,
+                followersCount: user.followers.length,
+                followingCount: user.following.length,
+            }
+
+            return extendedUser;
+        }
+        catch(err) {
+            throw new GraphQLError("Something went wrong in fetchUserDetailsWithEmail")
+        }
+    },
+
     fetchUserWithEmail:async (_:any, {email, password}: {email: string, password: string}) => {
         try{
 

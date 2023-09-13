@@ -15,6 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const User_1 = __importDefault(require("./User"));
 const tweetSchema = new mongoose_1.default.Schema({
+    category: {
+        type: String,
+        enum: ['tweet', 'retweet', 'reply'],
+        required: true
+    },
     body: {
         type: String,
     },
@@ -38,6 +43,11 @@ const tweetSchema = new mongoose_1.default.Schema({
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: "User"
         }],
+    parentTweet: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: 'Tweet',
+        default: null
+    },
     viewsCount: {
         type: Number,
         default: 0

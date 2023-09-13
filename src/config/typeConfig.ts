@@ -3,12 +3,14 @@ import mongoose from "mongoose";
 export interface tweetTypeDef {
   save(): unknown;
   _id: mongoose.Schema.Types.ObjectId
+  category: string
   body: string | undefined;
   files: string[] | [];
   author: mongoose.Schema.Types.ObjectId;
   replies: mongoose.Schema.Types.ObjectId[];
   likes: (mongoose.Schema.Types.ObjectId | string)[];
   retweet: mongoose.Schema.Types.ObjectId[];
+  parentTweet: mongoose.Schema.Types.ObjectId | null
   viewsCount: number;
   createdAt: Date | string;
   updatedAt: Date | string;

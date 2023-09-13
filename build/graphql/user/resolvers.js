@@ -59,6 +59,19 @@ const queries = {
             throw new graphql_1.GraphQLError("Something went wrong in fetchUserDetailsWithEmail");
         }
     }),
+    fetchUserDetailsWithUsername: (_, { username }) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const user = yield User_1.default.findOne({ username });
+            if (!user)
+                throw new graphql_1.GraphQLError(`User with email: ${username} does not exists`);
+            console.log(user);
+            const extendedUser = Object.assign(Object.assign({}, user._doc), { followersCount: user.followers.length, followingCount: user.following.length });
+            return extendedUser;
+        }
+        catch (err) {
+            throw new graphql_1.GraphQLError("Something went wrong in fetchUserDetailsWithEmail");
+        }
+    }),
     fetchUserWithEmail: (_, { email, password }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const user = yield User_1.default.findOne({ email });

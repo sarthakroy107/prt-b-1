@@ -3,6 +3,11 @@ import User from "./User";
 import { tweetTypeDef } from "../config/typeConfig";
 
 const tweetSchema =  new mongoose.Schema<tweetTypeDef>({
+    category: {
+        type:String,
+        enum: ['tweet', 'retweet', 'reply'],
+        required: true
+    },
     body: {
         type: String,
     },
@@ -26,6 +31,11 @@ const tweetSchema =  new mongoose.Schema<tweetTypeDef>({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     }],
+    parentTweet: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Tweet',
+        default: null
+    },
     viewsCount: {
         type: Number,
         default: 0
