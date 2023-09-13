@@ -21,15 +21,19 @@ const tweetSchema =  new mongoose.Schema<tweetTypeDef>({
     },
     replies: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Reply"
+        ref: "Tweet"
     }],
     likes:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     }],
+    quotetweet: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Tweet"
+    }],
     retweet:[{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+        ref: "Tweet"
     }],
     parentTweet: {
         type: mongoose.Schema.Types.ObjectId,
@@ -41,6 +45,7 @@ const tweetSchema =  new mongoose.Schema<tweetTypeDef>({
         default: 0
     },
 }, {timestamps: true})
+
 
 tweetSchema.pre("save", async function(next) {
     console.log("IN POST MIDDLEWARE");

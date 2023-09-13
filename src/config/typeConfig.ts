@@ -9,7 +9,8 @@ export interface tweetTypeDef {
   author: mongoose.Schema.Types.ObjectId;
   replies: mongoose.Schema.Types.ObjectId[];
   likes: (mongoose.Schema.Types.ObjectId | string)[];
-  retweet: mongoose.Schema.Types.ObjectId[];
+  retweet: (mongoose.Schema.Types.ObjectId | string)[];
+  quotetweet: (mongoose.Schema.Types.ObjectId | string)[];
   parentTweet: mongoose.Schema.Types.ObjectId | null
   viewsCount: number;
   createdAt: Date | string;

@@ -54,5 +54,6 @@ exports.typeDefs = `#graphql
         replyCount: Int!
         retweetCount: Int!
         isLiked: Boolean!
+        isRetweeted: Boolean!
     }
 `;

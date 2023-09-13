@@ -33,15 +33,19 @@ const tweetSchema = new mongoose_1.default.Schema({
     },
     replies: [{
             type: mongoose_1.default.Schema.Types.ObjectId,
-            ref: "Reply"
+            ref: "Tweet"
         }],
     likes: [{
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: "User"
         }],
+    quotetweet: [{
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: "Tweet"
+        }],
     retweet: [{
             type: mongoose_1.default.Schema.Types.ObjectId,
-            ref: "User"
+            ref: "Tweet"
         }],
     parentTweet: {
         type: mongoose_1.default.Schema.Types.ObjectId,

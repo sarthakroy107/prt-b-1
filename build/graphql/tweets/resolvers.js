@@ -18,8 +18,7 @@ const Tweet_1 = __importDefault(require("../../models/Tweet"));
 const graphql_1 = require("graphql");
 const mutation = {
     createTweet: (_, { body, files }, context) => __awaiter(void 0, void 0, void 0, function* () {
-        const tweet = yield Tweet_1.default.create({ body, files, author: context.user.id });
-        //console.log(tweet);
+        const tweet = yield Tweet_1.default.create({ body, files, author: context.user.id, category: "tweet" });
         return tweet;
     }),
     deleteTweet: (_, { tweetId }, context) => __awaiter(void 0, void 0, void 0, function* () {
@@ -37,11 +36,16 @@ const queries = {
         //console.log(context.user.id);
         try {
             const tweets = yield Tweet_1.default.find({ author: context.user.id }).populate('author').sort({ createdAt: -1 });
-            const extendedTweeets = tweets.map((tweet) => {
-                const likeCount = tweet.likes.length;
-                const userHasLiked = tweet.likes.includes(context.user.id);
-                return Object.assign(Object.assign({}, tweet._doc), { likeCount, likes: userHasLiked ? [context.user.id] : [] });
-            });
+            // const extendedTweeets = tweets.map((tweet) => {
+            //     const likeCount = tweet.likes.length;
+            //     const userHasLiked = tweet.likes.includes(context.user.id);
+            //     return {
+            //         //@ts-ignore
+            //         ...tweet._doc,
+            //         likeCount,
+            //         likes: userHasLiked ? [context.user.id] : [],
+            //     };
+            // });
             const newTweets = yield Tweet_1.default.aggregate([
                 {
                     $match: { author: new mongoose_1.default.Types.ObjectId(context.user.id) }
@@ -59,7 +63,13 @@ const queries = {
                         likeCount: { $size: "$likes" },
                         isLiked: {
                             $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$likes"]
-                        }
+                        },
+                        replyCount: { $size: "$replies" },
+                        retweetCount: { $size: "$retweet" },
+                        isRetweeted: {
+                            $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweet"]
+                        },
+                        quotetweet: { $size: "$quotetweet" },
                     }
                 },
                 {
@@ -70,9 +80,7 @@ const queries = {
                 }
             ]);
             console.log(newTweets);
-            // console.log(extendedTweeets);
             return newTweets;
-            //return extendedTweeets;
         }
         catch (error) {
             throw new graphql_1.GraphQLError(`Something went wrong in fetchTweets ${error}`);
