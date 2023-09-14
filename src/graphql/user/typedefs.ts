@@ -53,4 +53,24 @@ export const typeDefs = `#graphql
         isLiked: Boolean!
         isRetweeted: Boolean!
     }
+
+    type Reply {
+        _id: String!
+        body: String
+        files: [String]
+        author: User!
+        parentTweet: Reply
+        replies: Tweet
+        likes: [String]
+        retweet: [Tweet]
+        createdAt: String!
+        updatedAt: String!
+        viewsCount: Int!
+        likeCount: Int!
+        replyCount: Int!
+        retweetCount: Int!
+        isLiked: Boolean!
+        isRetweeted: Boolean!
+        ogTweet: Tweet
+    }
 `

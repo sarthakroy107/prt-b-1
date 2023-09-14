@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 export interface tweetTypeDef {
   save(): unknown;
   _id: mongoose.Schema.Types.ObjectId
-  category: string
+  category: string;
   body: string | undefined;
   files: string[] | [];
   author: mongoose.Schema.Types.ObjectId;
@@ -11,8 +11,9 @@ export interface tweetTypeDef {
   likes: (mongoose.Schema.Types.ObjectId | string)[];
   retweet: (mongoose.Schema.Types.ObjectId | string)[];
   quotetweet: (mongoose.Schema.Types.ObjectId | string)[];
-  parentTweet: mongoose.Schema.Types.ObjectId | null
   viewsCount: number;
+  visibilty: string;
+  tags: (mongoose.Schema.Types.ObjectId | string)[];
   createdAt: Date | string;
   updatedAt: Date | string;
 }
@@ -37,4 +38,22 @@ export interface userTypeDef {
   createdAt: Date | string
   updatedAt: Date | string
 
+}
+
+export interface replyTypeDef {
+  _id: mongoose.Schema.Types.ObjectId;
+  category: string
+  body: string | undefined;
+  files: string[] | [];
+  author: mongoose.Schema.Types.ObjectId | string;
+  visibility: string;
+  replies: mongoose.Schema.Types.ObjectId[];
+  likes: (mongoose.Schema.Types.ObjectId | string)[];
+  retweet: (mongoose.Schema.Types.ObjectId | string)[];
+  quotetweet: (mongoose.Schema.Types.ObjectId | string)[];
+  parentTweet: mongoose.Schema.Types.ObjectId | string;
+  ogTweet: mongoose.Schema.Types.ObjectId | string;
+  viewsCount: number;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }

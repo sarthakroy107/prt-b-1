@@ -16,6 +16,7 @@ exports.TweetResolver = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const Tweet_1 = __importDefault(require("../../models/Tweet"));
 const graphql_1 = require("graphql");
+const Reply_1 = __importDefault(require("../../models/Reply"));
 const mutation = {
     createTweet: (_, { body, files }, context) => __awaiter(void 0, void 0, void 0, function* () {
         const tweet = yield Tweet_1.default.create({ body, files, author: context.user.id, category: "tweet" });
@@ -35,17 +36,6 @@ const queries = {
     fetchUserTweets: (_, p, context) => __awaiter(void 0, void 0, void 0, function* () {
         //console.log(context.user.id);
         try {
-            const tweets = yield Tweet_1.default.find({ author: context.user.id }).populate('author').sort({ createdAt: -1 });
-            // const extendedTweeets = tweets.map((tweet) => {
-            //     const likeCount = tweet.likes.length;
-            //     const userHasLiked = tweet.likes.includes(context.user.id);
-            //     return {
-            //         //@ts-ignore
-            //         ...tweet._doc,
-            //         likeCount,
-            //         likes: userHasLiked ? [context.user.id] : [],
-            //     };
-            // });
             const newTweets = yield Tweet_1.default.aggregate([
                 {
                     $match: { author: new mongoose_1.default.Types.ObjectId(context.user.id) }
@@ -84,6 +74,19 @@ const queries = {
         }
         catch (error) {
             throw new graphql_1.GraphQLError(`Something went wrong in fetchTweets ${error}`);
+        }
+    }),
+    fetchUserReplies: (_, p, context) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const replies = yield Reply_1.default.aggregate([
+                {
+                    $match: { author: context.user.id }
+                }
+            ]);
+            return replies;
+        }
+        catch (error) {
+            throw new graphql_1.GraphQLError(`Something went wrong in fetchUserReplies. Error: ${error}`);
         }
     })
 };

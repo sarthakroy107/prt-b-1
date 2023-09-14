@@ -5,8 +5,9 @@ import { tweetTypeDef } from "../config/typeConfig";
 const tweetSchema =  new mongoose.Schema<tweetTypeDef>({
     category: {
         type:String,
-        enum: ['tweet', 'retweet', 'reply'],
-        required: true
+        enum: ['tweet'],
+        required: true,
+        default: 'tweet'
     },
     body: {
         type: String,
@@ -19,9 +20,15 @@ const tweetSchema =  new mongoose.Schema<tweetTypeDef>({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
+    visibilty: {
+        type: String,
+        enum: ["visible", "deleted", "hidden"],
+        requied: true,
+        default: "visible"
+    },
     replies: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Tweet"
+        ref: "Reply"
     }],
     likes:[{
         type: mongoose.Schema.Types.ObjectId,
@@ -29,21 +36,20 @@ const tweetSchema =  new mongoose.Schema<tweetTypeDef>({
     }],
     quotetweet: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Tweet"
+        ref: "Reply"
     }],
     retweet:[{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Tweet"
+        ref: "Reply"
     }],
-    parentTweet: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Tweet',
-        default: null
-    },
     viewsCount: {
         type: Number,
         default: 0
     },
+    tags: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Tag"
+    }]
 }, {timestamps: true})
 
 
