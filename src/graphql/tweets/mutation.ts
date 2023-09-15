@@ -1,4 +1,5 @@
 export const Mutation = `#graphql
-    createTweet(body: String, files: [String]): Tweet
-    deleteTweet(tweetId: String!): Boolean!
+    createTweet(text: String, files: [String]): Tweet
+    deleteTweet(tweetId: String!): Boolean! 
+    createReply(text: String, files: [String], tweetId: String!, repling_to: String!): TweetCard
 `

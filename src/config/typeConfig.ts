@@ -12,9 +12,9 @@ export interface tweetTypeDef {
   author_id:            mongoose.Schema.Types.ObjectId;
   likes:                (mongoose.Schema.Types.ObjectId | string)[];
   replies:              (mongoose.Schema.Types.ObjectId | string)[];
-  retweets:              (mongoose.Schema.Types.ObjectId | string)[];
-  quotetweets:           (mongoose.Schema.Types.ObjectId | string)[];
-  hashtags:              (mongoose.Schema.Types.ObjectId | string)[];
+  retweets:             (mongoose.Schema.Types.ObjectId | string)[];
+  quotetweets:          (mongoose.Schema.Types.ObjectId | string)[];
+  hashtags:             (mongoose.Schema.Types.ObjectId | string)[];
   private:              boolean;
   possibly_sensitive:   boolean;
   viewsCount:           number;

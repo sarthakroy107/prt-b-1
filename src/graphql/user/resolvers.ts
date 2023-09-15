@@ -43,32 +43,70 @@ const queries =  {
     fetchUserDetailsWithEmail: async (_: any, {email}: {email: string}) => {
         
         try{
-            const user = await User.findOne({email});
-            if(!user) throw new GraphQLError(`User with email: ${email} does not exists`);
-            console.log(user);
-            const extendedUser = {
-                //@ts-ignore
-                ...user._doc,
-                followersCount: user.followers.length,
-                followingCount: user.following.length,
-            }
 
-            return extendedUser;
+            const uSer = await User.aggregate([
+                {
+                    $match: { email }
+                },
+                {
+                    $addFields: {
+                        tweetCount: { $size: "$tweets"},
+                        followersCount: { $size: "$followers" },
+                        followingCount: { $size: "$following" }
+                    }
+                },
+                {
+                    $limit: 1
+                }
+            ])
+            console.log("uSer: ")
+            console.log(uSer[0])
+
+            // const user = await User.findOne({email});
+            // if(!user) throw new GraphQLError(`User with email: ${email} does not exists`);
+            // console.log(user);
+            // const extendedUser = {
+            //     //@ts-ignore
+            //     ...user._doc,
+            //     tweetCount: user.tweets.length,
+            //     followersCount: user.followers.length,
+            //     followingCount: user.following.length,
+            // }
+
+            return uSer[0]
         }
         catch(err) {
+            console.log(err)
             throw new GraphQLError("Something went wrong in fetchUserDetailsWithEmail")
         }
     },
 
+
     fetchUserDetailsWithUsername: async (_: any, {username}: {username: string}) => {
         
         try{
+
+            const uSer = await User.aggregate([
+                {
+                    $match: { username }
+                },
+                {
+                    $addFields: {
+                        tweetCount: { $size: "$tweets"},
+                        followersCount: { $size: "$followers" },
+                        followingCount: { $size: "$following" }
+                    }
+                }
+            ])
+            console.log(uSer)
+
             const user = await User.findOne({username});
             if(!user) throw new GraphQLError(`User with email: ${username} does not exists`);
             console.log(user);
             const extendedUser = {
                 //@ts-ignore
                 ...user._doc,
+                tweetCount: user.tweets.length,
                 followersCount: user.followers.length,
                 followingCount: user.following.length,
             }

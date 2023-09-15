@@ -59,12 +59,12 @@ exports.typeDefs = `#graphql
         in_reply_to_user_id:  UserOrString
         text:                 String
         files:                [String]
-        author_id:            String!
+        author_id:            User
         likes:                [String]
         replies:              [String]
         retweets:             [String]
         quotetweets:          [String]
-        hashtags:              [String]
+        hashtags:             [String]
         private:              Boolean
         possibly_sensitive:   Boolean
         viewsCount:           Int!
@@ -73,27 +73,28 @@ exports.typeDefs = `#graphql
         likeCount:            Int!
         replyCount:           Int!
         retweetCount:         Int!
+        quotetweetCount:      Int!
         isLiked:              Boolean!
         isRetweeted:          Boolean!
     }
 
     type Reply {
-        _id: String!
-        body: String
-        files: [String]
-        author: User!
-        parentTweet: Reply
-        replies: Tweet
-        likes: [String]
-        retweet: [Tweet]
-        createdAt: String!
-        updatedAt: String!
-        viewsCount: Int!
-        likeCount: Int!
-        replyCount: Int!
-        retweetCount: Int!
-        isLiked: Boolean!
-        isRetweeted: Boolean!
-        ogTweet: Tweet
+        _id:                  String!
+        body:                 String
+        files:                [String]
+        author:               User!
+        parentTweet:          Reply
+        replies:              Tweet
+        likes:                [String]
+        retweet:              [Tweet]
+        createdAt:            String!
+        updatedAt:            String!
+        viewsCount:           Int!
+        likeCount:            Int!
+        replyCount:           Int!
+        retweetCount:         Int!
+        isLiked:              Boolean!
+        isRetweeted:          Boolean!
+        ogTweet:              Tweet
     }
 `;
