@@ -1,5 +1,11 @@
 export const typeDefs = `#graphql
 
+    type UserID {
+        value: Int
+    }
+    
+    union UserOrString = UserID | User
+
     type User {
         _id: String!
         name: String!
@@ -24,34 +30,48 @@ export const typeDefs = `#graphql
     }
 
     type Tweet {
-        _id: String!
-        body: String!
-        files: [String]
-        author: User!
-        replies: Tweet
-        likes: [String]
-        retweet: [Tweet]
-        createdAt: String!
-        updatedAt: String!
-        viewsCount: Int!
+        _id:                  String!
+        in_reply:             Boolean
+        in_reply_to_tweet_id: Tweet
+        in_reply_to_user_id:  User
+        text:                 String
+        files:                [String]
+        author_id:            String!
+        likes:                [String]
+        replies:              [String]
+        retweets:             [String]
+        quotetweets:          [String]
+        hastags:              [String]
+        private:              Boolean
+        possibly_sensitive:   Boolean
+        viewsCount:           Int!
+        createdAt:            String!
+        updatedAt:            String!
     }
 
     type TweetCard {
-        _id: String!
-        body: String
-        files: [String]
-        author: User!
-        replies: Tweet
-        likes: [String]
-        retweet: [Tweet]
-        createdAt: String!
-        updatedAt: String!
-        viewsCount: Int!
-        likeCount: Int!
-        replyCount: Int!
-        retweetCount: Int!
-        isLiked: Boolean!
-        isRetweeted: Boolean!
+        _id:                  String!
+        in_reply:             Boolean
+        in_reply_to_tweet_id: Tweet
+        in_reply_to_user_id:  UserOrString
+        text:                 String
+        files:                [String]
+        author_id:            String!
+        likes:                [String]
+        replies:              [String]
+        retweets:             [String]
+        quotetweets:          [String]
+        hashtags:              [String]
+        private:              Boolean
+        possibly_sensitive:   Boolean
+        viewsCount:           Int!
+        createdAt:            String!
+        updatedAt:            String!
+        likeCount:            Int!
+        replyCount:           Int!
+        retweetCount:         Int!
+        isLiked:              Boolean!
+        isRetweeted:          Boolean!
     }
 
     type Reply {

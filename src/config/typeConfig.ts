@@ -1,21 +1,25 @@
 import mongoose from "mongoose";
 
 export interface tweetTypeDef {
-  save(): unknown;
-  _id: mongoose.Schema.Types.ObjectId
-  category: string;
-  body: string | undefined;
-  files: string[] | [];
-  author: mongoose.Schema.Types.ObjectId;
-  replies: mongoose.Schema.Types.ObjectId[];
-  likes: (mongoose.Schema.Types.ObjectId | string)[];
-  retweet: (mongoose.Schema.Types.ObjectId | string)[];
-  quotetweet: (mongoose.Schema.Types.ObjectId | string)[];
-  viewsCount: number;
-  visibilty: string;
-  tags: (mongoose.Schema.Types.ObjectId | string)[];
-  createdAt: Date | string;
-  updatedAt: Date | string;
+
+  save():               unknown;
+  _id:                  mongoose.Schema.Types.ObjectId
+  in_reply:             boolean;
+  in_reply_to_tweet_id: mongoose.Schema.Types.ObjectId | string | null;
+  in_reply_to_user_id:  mongoose.Schema.Types.ObjectId | string | null;
+  text:                 string | undefined;
+  files:                string[] | [];
+  author_id:            mongoose.Schema.Types.ObjectId;
+  likes:                (mongoose.Schema.Types.ObjectId | string)[];
+  replies:              (mongoose.Schema.Types.ObjectId | string)[];
+  retweets:              (mongoose.Schema.Types.ObjectId | string)[];
+  quotetweets:           (mongoose.Schema.Types.ObjectId | string)[];
+  hashtags:              (mongoose.Schema.Types.ObjectId | string)[];
+  private:              boolean;
+  possibly_sensitive:   boolean;
+  viewsCount:           number;
+  createdAt:            Date | string;
+  updatedAt:            Date | string;
 }
 
 export interface userTypeDef {

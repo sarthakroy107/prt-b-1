@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import Tweet from "../../models/Tweet";
 import { GraphQLError } from 'graphql';
-import Reply from "../../models/Reply";
 
 const mutation = {
   createTweet: async (_: any, { body, files }: { body: string | undefined, files: [string] | undefined }, context: any) => {
@@ -64,20 +63,7 @@ const queries = {
       return newTweets
 
     } catch (error) {
-      throw new GraphQLError(`Something went wrong in fetchTweets ${error}`);
-    }
-  },
-
-  fetchUserReplies:async (_: any, p: any, context: any) => {
-    try {
-      const replies = await Reply.aggregate([
-        {
-          $match: { author: context.user.id }
-        }
-      ]);
-      return replies
-    } catch (error) {
-      throw new GraphQLError(`Something went wrong in fetchUserReplies. Error: ${error}`)
+      throw new GraphQLError(`Something went wrong in fetchTweets ${error}`)
     }
   }
 

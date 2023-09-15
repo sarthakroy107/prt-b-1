@@ -3,6 +3,7 @@ import { User } from "./user";
 import { PrismaClient } from '@prisma/client'
 import { Auth } from "./auth";
 import { Tweet } from "./tweets";
+import { Reply } from "./reply";
 const prisma = new PrismaClient()
 
 async function createApolloGraphqlServer() {
@@ -13,24 +14,28 @@ async function createApolloGraphqlServer() {
             ${User.Queries}
             ${Auth.Queries}
             ${Tweet.Queries}
+            ${Reply.Queries}
         }
         type Mutation {
             ${User.Mutation}
             ${Auth.Mutation}
             ${Tweet.Mutation}
+            ${Reply.Mutation}
         }
         `,
         resolvers: {
             Query: {
                 ...User.UserResolvers.queries,
                 ...Auth.AuthResolver.queries,
-                ...Tweet.TweetResolver.queries
+                ...Tweet.TweetResolver.queries,
+                ...Reply.ReplyResolver.queries
 
             },
             Mutation: {
                 ...User.UserResolvers.mutation,
                 ...Auth.AuthResolver.mutation,
-                ...Tweet.TweetResolver.mutation
+                ...Tweet.TweetResolver.mutation,
+                ...Reply.ReplyResolver.mutation
             }
         },
     })
