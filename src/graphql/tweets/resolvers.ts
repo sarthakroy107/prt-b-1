@@ -96,35 +96,45 @@ const queries = {
     let i = 0, j = 0;
     let super_array: any = [];
     
-    const find_reply_is_present = (id: mongoose.Types.ObjectId) => {
-
+    const find_reply_is_present = (id: mongoose.Types.ObjectId, position: [number, number]) => {
       //@ts-ignore
-      return memorization_array.find(item => item.id == id)
+      return memorization_array.find(item => item.id.equals(id));
     }
     
     for(const reply_id of reply_ids) {
 
-      let reply;
-      //@ts-ignore
-      const reply_is_present = find_reply_is_present(reply_id._id);
-      if(reply_is_present) {
-        reply = await Tweet.findById(reply_id._id);
-      }
-      else {
-        reply = await Tweet.findById(reply_id._id);
-        const obj = {
-          id: reply?._id,
-          position: [ i, j ]
+      let arr = [];
+      let condition: boolean | undefined = true
+      let in_reply_to: any = reply_id._id
+
+      while(condition) {
+        let reply;
+        //@ts-ignore
+        const reply_is_present = find_reply_is_present(in_reply_to);
+        if(reply_is_present) {
+          reply = super_array[reply_is_present.position[0]][reply_is_present.position[1]]
         }
-        memorization_array.push(obj)
+        else {
+          reply = await Tweet.findById(in_reply_to);
+          const obj = {
+            id: reply?._id,
+            position: [ i, j ]
+          }
+          memorization_array.push(obj)
+        }
+        j = j + 1;
+        arr.push(reply)
+        condition = reply?.in_reply;
+        in_reply_to = reply?.in_reply_to_tweet_id
+        
       }
-      j = j + 1;
-
-      console.log(memorization_array)
-      
-
-      return {}
-    }  
+      super_array.push(arr)
+      i = i + 1;
+    }
+    
+    console.log("super_array: ", super_array)
+    console.log("memorization_array", memorization_array)
+    return {}
   }
 }
 

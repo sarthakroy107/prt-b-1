@@ -93,29 +93,40 @@ const queries = {
         let memorization_array = [];
         let i = 0, j = 0;
         let super_array = [];
-        const find_reply_is_present = (id) => {
+        const find_reply_is_present = (id, position) => {
             //@ts-ignore
-            return memorization_array.find(item => item.id == id);
+            return memorization_array.find(item => item.id.equals(id));
         };
         for (const reply_id of reply_ids) {
-            let reply;
-            //@ts-ignore
-            const reply_is_present = find_reply_is_present(reply_id._id);
-            if (reply_is_present) {
-                reply = yield Tweet_1.default.findById(reply_id._id);
+            let arr = [];
+            let condition = true;
+            let in_reply_to = reply_id._id;
+            while (condition) {
+                let reply;
+                //@ts-ignore
+                const reply_is_present = find_reply_is_present(in_reply_to);
+                if (reply_is_present) {
+                    reply = super_array[reply_is_present.position[0]][reply_is_present.position[1]];
+                }
+                else {
+                    reply = yield Tweet_1.default.findById(in_reply_to);
+                    const obj = {
+                        id: reply === null || reply === void 0 ? void 0 : reply._id,
+                        position: [i, j]
+                    };
+                    memorization_array.push(obj);
+                }
+                j = j + 1;
+                arr.push(reply);
+                condition = reply === null || reply === void 0 ? void 0 : reply.in_reply;
+                in_reply_to = reply === null || reply === void 0 ? void 0 : reply.in_reply_to_tweet_id;
             }
-            else {
-                reply = yield Tweet_1.default.findById(reply_id._id);
-                const obj = {
-                    id: reply === null || reply === void 0 ? void 0 : reply._id,
-                    position: [i, j]
-                };
-                memorization_array.push(obj);
-            }
-            j = j + 1;
-            console.log(memorization_array);
-            return {};
+            super_array.push(arr);
+            i = i + 1;
         }
+        console.log("super_array: ", super_array);
+        console.log("memorization_array", memorization_array);
+        return {};
     })
 };
 exports.TweetResolver = { mutation, queries };
