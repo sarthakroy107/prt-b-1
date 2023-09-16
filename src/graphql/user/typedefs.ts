@@ -32,7 +32,7 @@ export const typeDefs = `#graphql
     type Tweet {
         _id:                  String!
         in_reply:             Boolean
-        in_reply_to_tweet_id: Tweet
+        in_reply_to_tweet_id: String
         in_reply_to_user_id:  User
         text:                 String
         files:                [String]
@@ -52,8 +52,8 @@ export const typeDefs = `#graphql
     type TweetCard {
         _id:                  String!
         in_reply:             Boolean
-        in_reply_to_tweet_id: Tweet
-        in_reply_to_user_id:  UserOrString
+        in_reply_to_tweet_id: String
+        in_reply_to_user_id:  User
         text:                 String
         files:                [String]
         author_id:            User

@@ -7,6 +7,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const tweetSchema = new mongoose_1.default.Schema({
     author_id: {
         type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: "User",
         required: true
     },
     text: {
@@ -19,15 +20,19 @@ const tweetSchema = new mongoose_1.default.Schema({
         }],
     likes: [{
             type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: "User",
         }],
     retweets: [{
             type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: "User",
         }],
     replies: [{
             type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: "User",
         }],
     quotetweets: [{
-            type: mongoose_1.default.Schema.Types.ObjectId
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: "User",
         }],
     hashtags: [{
             type: mongoose_1.default.Schema.Types.ObjectId,

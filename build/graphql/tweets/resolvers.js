@@ -49,7 +49,7 @@ const queries = {
         try {
             const newTweets = yield Tweet_1.default.aggregate([
                 {
-                    $match: { author_id: new mongoose_1.default.Types.ObjectId(context.user.id) }
+                    $match: { author_id: new mongoose_1.default.Types.ObjectId(context.user.id), in_reply: false }
                 },
                 {
                     $lookup: {
@@ -88,23 +88,34 @@ const queries = {
         }
     }),
     fetchUserReplies: (_, p, context) => __awaiter(void 0, void 0, void 0, function* () {
-        const replies = yield Tweet_1.default.find({ author_id: context.user.id, in_reply: true }).populate('author_id');
-        let superArr = [];
-        for (const reply of replies) {
-            let arr = [];
-            arr.push(reply);
-            let condition = true;
-            let p_id = reply.in_reply_to_tweet_id;
-            while (condition) {
-                const parent_tweet = yield Tweet_1.default.findById(p_id).populate('author_id');
-                arr.push(parent_tweet);
-                p_id = parent_tweet === null || parent_tweet === void 0 ? void 0 : parent_tweet.in_reply_to_tweet_id;
-                condition = parent_tweet === null || parent_tweet === void 0 ? void 0 : parent_tweet.in_reply;
+        const reply_ids = yield Tweet_1.default.find({ author_id: context.user.id, in_reply: true }).select("_id");
+        console.log("Reply ids: ", reply_ids);
+        let memorization_array = [];
+        let i = 0, j = 0;
+        let super_array = [];
+        const find_reply_is_present = (id) => {
+            //@ts-ignore
+            return memorization_array.find(item => item.id == id);
+        };
+        for (const reply_id of reply_ids) {
+            let reply;
+            //@ts-ignore
+            const reply_is_present = find_reply_is_present(reply_id._id);
+            if (reply_is_present) {
+                reply = yield Tweet_1.default.findById(reply_id._id);
             }
-            superArr.push(arr);
+            else {
+                reply = yield Tweet_1.default.findById(reply_id._id);
+                const obj = {
+                    id: reply === null || reply === void 0 ? void 0 : reply._id,
+                    position: [i, j]
+                };
+                memorization_array.push(obj);
+            }
+            j = j + 1;
+            console.log(memorization_array);
+            return {};
         }
-        console.log("SuperArr: ", superArr);
-        return superArr;
     })
 };
 exports.TweetResolver = { mutation, queries };

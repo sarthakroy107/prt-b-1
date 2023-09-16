@@ -4,6 +4,7 @@ import { tweetTypeDef } from "../config/typeConfig";
 const tweetSchema =  new mongoose.Schema<tweetTypeDef>({
     author_id: {
         type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
         required: true
     },
     text: {
@@ -16,15 +17,19 @@ const tweetSchema =  new mongoose.Schema<tweetTypeDef>({
     }],
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
     }],
     retweets: [{
         type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
     }],
     replies: [{
         type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
     }],
     quotetweets: [{
-        type: mongoose.Schema.Types.ObjectId
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
     }],
     hashtags: [{
         type: mongoose.Schema.Types.ObjectId,

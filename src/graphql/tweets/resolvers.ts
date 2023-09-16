@@ -46,7 +46,7 @@ const queries = {
     try {
       const newTweets = await Tweet.aggregate([
         {
-          $match: { author_id: new mongoose.Types.ObjectId(context.user.id) }
+          $match: { author_id: new mongoose.Types.ObjectId(context.user.id), in_reply: false }
         },
         {
           $lookup: {
@@ -88,28 +88,43 @@ const queries = {
   },
 
   fetchUserReplies: async(_:any, p:any, context: any) => {
-    
-    const replies = await Tweet.find({author_id: context.user.id, in_reply: true}).populate('author_id');
 
-    let superArr = [];
+    const reply_ids = await Tweet.find({ author_id: context.user.id, in_reply: true }).select("_id");
+    console.log("Reply ids: ",reply_ids)
     
-    for (const reply of replies) {
-      let arr: any = [];
-      arr.push(reply);
-      let condition = true;
-      let p_id = reply.in_reply_to_tweet_id
+    let memorization_array: any = [];
+    let i = 0, j = 0;
+    let super_array: any = [];
+    
+    const find_reply_is_present = (id: mongoose.Types.ObjectId) => {
 
-      while(condition) {
-        const parent_tweet = await Tweet.findById(p_id).populate('author_id');
-        arr.push(parent_tweet)
-        p_id = parent_tweet?.in_reply_to_tweet_id!
-        condition = parent_tweet?.in_reply!
-      }
-      superArr.push(arr)
+      //@ts-ignore
+      return memorization_array.find(item => item.id == id)
     }
-    console.log("SuperArr: ", superArr)
     
-    return superArr
+    for(const reply_id of reply_ids) {
+
+      let reply;
+      //@ts-ignore
+      const reply_is_present = find_reply_is_present(reply_id._id);
+      if(reply_is_present) {
+        reply = await Tweet.findById(reply_id._id);
+      }
+      else {
+        reply = await Tweet.findById(reply_id._id);
+        const obj = {
+          id: reply?._id,
+          position: [ i, j ]
+        }
+        memorization_array.push(obj)
+      }
+      j = j + 1;
+
+      console.log(memorization_array)
+      
+
+      return {}
+    }  
   }
 }
 
