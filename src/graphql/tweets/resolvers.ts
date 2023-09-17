@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Tweet from "../../models/Tweet";
 import { GraphQLError } from 'graphql';
 import User from "../../models/User";
+import { format_tweet_to_respose_format } from "../../services/tweetSeivices";
 
 const mutation = {
   createTweet: async (_: any, { text, files }: { text: string | undefined, files: [string] | undefined }, context: any) => {
@@ -89,8 +90,8 @@ const queries = {
 
   fetchUserReplies: async(_:any, p:any, context: any) => {
 
-    const reply_ids = await Tweet.find({ author_id: context.user.id, in_reply: true }).select("_id");
-    console.log("Reply ids: ",reply_ids)
+    const reply_ids = await Tweet.find({ author_id: context.user.id, in_reply: true }).select("_id").sort( { createdAt: -1 } );
+    //console.log("Reply ids: ",reply_ids)
     
     let memorization_array: any = [];
     let i = 0, j = 0;
@@ -104,38 +105,109 @@ const queries = {
     for(const reply_id of reply_ids) {
 
       let arr = [];
-      let condition: boolean | undefined = true
-      let in_reply_to: any = reply_id._id
+      let condition: boolean | undefined = true;
+      let in_reply_to: any = reply_id._id;
+      let new_reply = false;
 
       while(condition) {
+
         let reply;
         //@ts-ignore
         const reply_is_present = find_reply_is_present(in_reply_to);
+
         if(reply_is_present) {
           reply = super_array[reply_is_present.position[0]][reply_is_present.position[1]]
         }
         else {
-          reply = await Tweet.findById(in_reply_to);
+
+          const new_reply_aggregate = await Tweet.aggregate([
+            {
+              $match: { _id: new mongoose.Types.ObjectId(in_reply_to) }
+            },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'author_id',
+                foreignField: '_id',
+                as: 'author'
+              }
+            },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'in_reply_to_user_id',
+                foreignField: '_id',
+                as: 'in_reply_to_user_id_field'
+              }
+            },
+            {
+              $addFields: {
+                in_reply_to_username: {
+                  $arrayElemAt: ['$in_reply_to_user_id_field.username', 0]
+                },
+                author_display_name: {
+                  $arrayElemAt: ['$author.name', 0]
+                },
+                author_username: {
+                  $arrayElemAt: ['$author.username', 0]
+                },
+                author_profile_image: {
+                  $arrayElemAt: ['$author.profileImageUrl', 0]
+                },
+                likeCount: { $size: "$likes" },
+                isLiked: {
+                  $in: [new mongoose.Types.ObjectId(context.user.id), "$likes"]
+                },
+                replyCount: { $size: "$replies" },
+                retweetCount: { $size: "$retweets" },
+                isRetweeted: {
+                  $in: [new mongoose.Types.ObjectId(context.user.id), "$retweets"]
+                },
+                quotetweetCount: { $size: "$quotetweets" },
+              }
+            },
+            {
+              $project: {
+                author: 0, 
+                in_reply_to_user_id_field: 0
+              }
+            },
+            {
+              $sort: { createdAt: -1 }
+            },
+          ]);
+          
+          reply = format_tweet_to_respose_format(new_reply_aggregate[0])
+
           const obj = {
             id: reply?._id,
             position: [ i, j ]
           }
           memorization_array.push(obj)
+          new_reply = true;
         }
         j = j + 1;
         arr.push(reply)
+
         condition = reply?.in_reply;
         in_reply_to = reply?.in_reply_to_tweet_id
         
       }
-      super_array.push(arr)
+      if(new_reply)  {
+        super_array.push(arr)
+      }
       i = i + 1;
     }
     
-    console.log("super_array: ", super_array)
-    console.log("memorization_array", memorization_array)
-    return {}
+    for(const arr of super_array) {
+      arr.sort((a: any,b: any) => {
+        //@ts-ignore
+        return new Date(a.created_at) - new Date(b.created_at);
+      })
+    }
+    
+    return super_array
   }
 }
 
-export const TweetResolver = { mutation, queries };
+export const TweetResolver = { mutation, queries }

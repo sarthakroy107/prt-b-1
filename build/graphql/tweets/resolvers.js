@@ -17,6 +17,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const Tweet_1 = __importDefault(require("../../models/Tweet"));
 const graphql_1 = require("graphql");
 const User_1 = __importDefault(require("../../models/User"));
+const tweetSeivices_1 = require("../../services/tweetSeivices");
 const mutation = {
     createTweet: (_, { text, files }, context) => __awaiter(void 0, void 0, void 0, function* () {
         const tweet = yield Tweet_1.default.create({ text, files, author_id: context.user.id });
@@ -88,8 +89,8 @@ const queries = {
         }
     }),
     fetchUserReplies: (_, p, context) => __awaiter(void 0, void 0, void 0, function* () {
-        const reply_ids = yield Tweet_1.default.find({ author_id: context.user.id, in_reply: true }).select("_id");
-        console.log("Reply ids: ", reply_ids);
+        const reply_ids = yield Tweet_1.default.find({ author_id: context.user.id, in_reply: true }).select("_id").sort({ createdAt: -1 });
+        //console.log("Reply ids: ",reply_ids)
         let memorization_array = [];
         let i = 0, j = 0;
         let super_array = [];
@@ -101,6 +102,7 @@ const queries = {
             let arr = [];
             let condition = true;
             let in_reply_to = reply_id._id;
+            let new_reply = false;
             while (condition) {
                 let reply;
                 //@ts-ignore
@@ -109,24 +111,87 @@ const queries = {
                     reply = super_array[reply_is_present.position[0]][reply_is_present.position[1]];
                 }
                 else {
-                    reply = yield Tweet_1.default.findById(in_reply_to);
+                    const new_reply_aggregate = yield Tweet_1.default.aggregate([
+                        {
+                            $match: { _id: new mongoose_1.default.Types.ObjectId(in_reply_to) }
+                        },
+                        {
+                            $lookup: {
+                                from: 'users',
+                                localField: 'author_id',
+                                foreignField: '_id',
+                                as: 'author'
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'users',
+                                localField: 'in_reply_to_user_id',
+                                foreignField: '_id',
+                                as: 'in_reply_to_user_id_field'
+                            }
+                        },
+                        {
+                            $addFields: {
+                                in_reply_to_username: {
+                                    $arrayElemAt: ['$in_reply_to_user_id_field.username', 0]
+                                },
+                                author_display_name: {
+                                    $arrayElemAt: ['$author.name', 0]
+                                },
+                                author_username: {
+                                    $arrayElemAt: ['$author.username', 0]
+                                },
+                                author_profile_image: {
+                                    $arrayElemAt: ['$author.profileImageUrl', 0]
+                                },
+                                likeCount: { $size: "$likes" },
+                                isLiked: {
+                                    $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$likes"]
+                                },
+                                replyCount: { $size: "$replies" },
+                                retweetCount: { $size: "$retweets" },
+                                isRetweeted: {
+                                    $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweets"]
+                                },
+                                quotetweetCount: { $size: "$quotetweets" },
+                            }
+                        },
+                        {
+                            $project: {
+                                author: 0,
+                                in_reply_to_user_id_field: 0
+                            }
+                        },
+                        {
+                            $sort: { createdAt: -1 }
+                        },
+                    ]);
+                    reply = (0, tweetSeivices_1.format_tweet_to_respose_format)(new_reply_aggregate[0]);
                     const obj = {
                         id: reply === null || reply === void 0 ? void 0 : reply._id,
                         position: [i, j]
                     };
                     memorization_array.push(obj);
+                    new_reply = true;
                 }
                 j = j + 1;
                 arr.push(reply);
                 condition = reply === null || reply === void 0 ? void 0 : reply.in_reply;
                 in_reply_to = reply === null || reply === void 0 ? void 0 : reply.in_reply_to_tweet_id;
             }
-            super_array.push(arr);
+            if (new_reply) {
+                super_array.push(arr);
+            }
             i = i + 1;
         }
-        console.log("super_array: ", super_array);
-        console.log("memorization_array", memorization_array);
-        return {};
+        for (const arr of super_array) {
+            arr.sort((a, b) => {
+                //@ts-ignore
+                return new Date(a.created_at) - new Date(b.created_at);
+            });
+        }
+        return super_array;
     })
 };
 exports.TweetResolver = { mutation, queries };

@@ -54,28 +54,24 @@ exports.typeDefs = `#graphql
 
     type TweetCard {
         _id:                  String!
-        in_reply:             Boolean
-        in_reply_to_tweet_id: String
-        in_reply_to_user_id:  User
+        author_display_name:  String!
+        author_username:      String!
+        author_profile_image: String!
         text:                 String
         files:                [String]
-        author_id:            User
-        likes:                [String]
-        replies:              [String]
-        retweets:             [String]
-        quotetweets:          [String]
-        hashtags:             [String]
-        private:              Boolean
-        possibly_sensitive:   Boolean
-        viewsCount:           Int!
-        createdAt:            String!
-        updatedAt:            String!
-        likeCount:            Int!
-        replyCount:           Int!
-        retweetCount:         Int!
-        quotetweetCount:      Int!
-        isLiked:              Boolean!
-        isRetweeted:          Boolean!
+        is_liked:             Boolean
+        like_count:           Int
+        is_retweeted:         Boolean!
+        retweet_count:        Int
+        quotetweet_count:     Int
+        reply_count:          Int
+        is_sensitive:         Boolean
+        in_reply:             Boolean
+        in_reply_to_tweet_id: String
+        in_reply_to_user_id:  String
+        in_reply_to_username: String
+        created_at:           String
+        updated_at:           String
     }
 
     type Reply {
