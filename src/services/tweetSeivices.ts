@@ -3,7 +3,7 @@ import { responeTypeDef } from "../config/typeConfig"
 export const format_tweet_to_respose_format = (tweet: any):responeTypeDef  => {
     //console.log(tweet)
     const response_obj: responeTypeDef = {
-        _id:                   tweet._id,
+        _id:                  tweet._id,
         author_display_name:  tweet.author_display_name,
         author_username:      tweet.author_username,
         author_profile_image: tweet.author_profile_image,
@@ -21,8 +21,9 @@ export const format_tweet_to_respose_format = (tweet: any):responeTypeDef  => {
         in_reply_to_tweet_id: tweet.in_reply_to_tweet_id === undefined ||  null ? null : tweet.in_reply_to_tweet_id,
         in_reply_to_username: tweet.in_reply_to_username === undefined ||  null ? null : tweet.in_reply_to_username, 
         created_at:           tweet.createdAt,
-        updated_at:           tweet.updatedAt
+        updated_at:           tweet.updatedAt,
+        views_count:          tweet.viewsCount
     }
-    //console.log(response_obj)
+    console.log(response_obj)
     return response_obj
 }

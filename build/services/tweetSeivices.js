@@ -22,9 +22,10 @@ const format_tweet_to_respose_format = (tweet) => {
         in_reply_to_tweet_id: tweet.in_reply_to_tweet_id === undefined || null ? null : tweet.in_reply_to_tweet_id,
         in_reply_to_username: tweet.in_reply_to_username === undefined || null ? null : tweet.in_reply_to_username,
         created_at: tweet.createdAt,
-        updated_at: tweet.updatedAt
+        updated_at: tweet.updatedAt,
+        views_count: tweet.viewsCount
     };
-    //console.log(response_obj)
+    console.log(response_obj);
     return response_obj;
 };
 exports.format_tweet_to_respose_format = format_tweet_to_respose_format;

@@ -82,5 +82,6 @@ export interface responeTypeDef {
   in_reply_to_username: string;
   created_at:           Date | string;
   updated_at:           Date | string;
+  views_count:           number;
 
 }

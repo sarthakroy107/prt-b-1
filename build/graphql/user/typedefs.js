@@ -72,6 +72,7 @@ exports.typeDefs = `#graphql
         in_reply_to_username: String
         created_at:           String
         updated_at:           String
+        views_count:          Int
     }
 
     type Reply {

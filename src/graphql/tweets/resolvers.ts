@@ -45,43 +45,75 @@ const queries = {
   fetchUserTweets: async (_: any, p: any, context: any) => {
     
     try {
-      const newTweets = await Tweet.aggregate([
-        {
-          $match: { author_id: new mongoose.Types.ObjectId(context.user.id), in_reply: false }
-        },
-        {
-          $lookup: {
-            from: 'users',
-            localField: 'author_id',
-            foreignField: '_id',
-            as: 'author_id'
-          }
-        },
-        {
-          $addFields: {
-            likeCount: { $size: "$likes" },
-            isLiked: {
-              $in: [new mongoose.Types.ObjectId(context.user.id), "$likes"]
-            },
-            replyCount: { $size: "$replies" },
-            retweetCount: { $size: "$retweets" },
-            isRetweeted: {
-              $in: [new mongoose.Types.ObjectId(context.user.id), "$retweets"]
-            },
-            quotetweetCount: { $size: "$quotetweets" },
-          }
-        },
-        {
-          $unwind: "$author_id"
-        },
-        {
-          $sort: { createdAt: -1 }
-        }
-      ]);
+      const tweet_ids = await Tweet.find({ author_id: context.user.id, in_reply: false }).select("_id").sort( { createdAt: -1 } );
 
-      console.log(newTweets);
+      let response_tweet_array = [];
 
-      return newTweets
+      for(const tweet_id of tweet_ids) {
+        const tweet = await Tweet.aggregate([
+          {
+            $match: { _id: tweet_id._id }
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'author_id',
+              foreignField: '_id',
+              as: 'author'
+            }
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'in_reply_to_user_id',
+              foreignField: '_id',
+              as: 'in_reply_to_user_id_field'
+            }
+          },
+          {
+            $addFields: {
+              in_reply_to_username: {
+                $arrayElemAt: ['$in_reply_to_user_id_field.username', 0]
+              },
+              author_display_name: {
+                $arrayElemAt: ['$author.name', 0]
+              },
+              author_username: {
+                $arrayElemAt: ['$author.username', 0]
+              },
+              author_profile_image: {
+                $arrayElemAt: ['$author.profileImageUrl', 0]
+              },
+              likeCount: { $size: "$likes" },
+              isLiked: {
+                $in: [new mongoose.Types.ObjectId(context.user.id), "$likes"]
+              },
+              replyCount: { $size: "$replies" },
+              retweetCount: { $size: "$retweets" },
+              isRetweeted: {
+                $in: [new mongoose.Types.ObjectId(context.user.id), "$retweets"]
+              },
+              quotetweetCount: { $size: "$quotetweets" },
+            }
+          },
+          {
+            $project: {
+              author: 0, 
+              in_reply_to_user_id_field: 0
+            }
+          },
+          {
+            $sort: { createdAt: -1 }
+          },
+        ]);
+        console.log(tweet)
+        const formated_tweet = format_tweet_to_respose_format(tweet[0]);
+        response_tweet_array.push(formated_tweet)
+      }
+
+      console.log(response_tweet_array);
+
+      return response_tweet_array
 
     } catch (error) {
       throw new GraphQLError(`Something went wrong in fetchTweets ${error}`)
@@ -176,6 +208,7 @@ const queries = {
               $sort: { createdAt: -1 }
             },
           ]);
+          
           
           reply = format_tweet_to_respose_format(new_reply_aggregate[0])
 
