@@ -3,9 +3,11 @@ import { expressMiddleware } from '@apollo/server/express4';
 import createApolloGraphqlServer from "./graphql";
 import connect from "./config/database";
 import cors from 'cors';
-import { json } from 'body-parser';
+import * as http from 'http';
 import { verifyJWT } from "./services/JWT";
+import { Server } from "socket.io";
 require('dotenv').config()
+
 connect()
 
 const authRoutes = require('./routes/authRoute')
@@ -23,35 +25,50 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 const gqlFunc = async () =>{
+  
+  app.use("/graphql", expressMiddleware(await createApolloGraphqlServer(), {
+      context: async ({ req }) => {
+        
+        const token: string | string[] | undefined = req.headers["authorization"];
+        
+        try {
+          if(Array.isArray(token)) return {};
+          const user = await verifyJWT(token)
+          
+          return { user };
+        } 
+        catch (error) {
+          return {};
+        }
+      },
+    })
+  );
     
-    app.use(
-        "/graphql",
-        expressMiddleware(await createApolloGraphqlServer(), {
-          context: async ({ req }) => {
-            
-            const token: string | string[] | undefined = req.headers["authorization"];
-            //console.log("Header token: ",token)
-            try {
-              if(Array.isArray(token)) return {};
-              const user = await verifyJWT(token)
-              //console.log("Token user: ", user)
-              return { user };
-            } 
-            catch (error) {
-              return {};
-            }
-          },
-        })
-      );
+  const server = http.createServer(app);
+  const io = new Server(server, {
+    cors: {
+      origin: "http://localhost:3000",
+      methods: ["GET", "POST", "PUT", "DELETE"],
+    },
+  });
 
-    app.get('/', (req, res)=>{
-        return res.send("Sever is running")
-    })
-    app.use('/api/v1', authRoutes)
-    app.use('/api/v1', userRoutes)
-    app.listen(8000, ()=>{
-        console.log("Server is up and running");
-    })
 
+  app.get('/', (req, res)=>{
+      return res.send("Sever is running")
+  })
+
+  io.on('connection', (socket)=>{
+    console.log("Socket connected")
+    socket.on('disconnect', ()=>{
+      console.log("Socket disconnected")
+    })
+  })
+  app.use('/api/v1', authRoutes)
+  app.use('/api/v1', userRoutes)
+
+  server.listen(8000, ()=>{
+      console.log("Server is up and running");
+  })
 }
+
 gqlFunc();

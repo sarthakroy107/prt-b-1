@@ -25,7 +25,7 @@ const format_tweet_to_respose_format = (tweet) => {
         updated_at: tweet.updatedAt,
         views_count: tweet.viewsCount
     };
-    console.log(response_obj);
+    //onsole.log(response_obj)
     return response_obj;
 };
 exports.format_tweet_to_respose_format = format_tweet_to_respose_format;
