@@ -1,3 +1,5 @@
+import DirectMessage from "../../models/DirectMessages";
+import Message from "../../models/Message";
 import User from "../../models/User";
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken")
@@ -164,8 +166,25 @@ const queries =  {
         } catch (error) {
             console.log(error)
         }
-    }
-    
+    },
+
+    // sendMessage: async (_: any, { receiverId, text, files } : { conversationId: string, receiverId: string, text: string, files: string[] }, context: any ) => {
+    //     try {
+    //         let coversation: any = await DirectMessage.create({ member: [receiverId, context.user.id]})
+
+    //         if(!coversation) {
+    //             coversation = await DirectMessage.findOne({ members: {$all: [receiverId, context.user.id]}});
+    //         }
+    //         if(!coversation) {
+    //             coversation = await DirectMessage.create({ member: [receiverId, context.user.id]})
+    //         }
+
+    //         const message = await Message.create({conversationId: coversation._id, sender: context.user.id, text, files});
+    //         return message;
+    //     } catch (error) {
+    //         throw new GraphQLError("Something went wrong in sendMessage");
+    //     }
+    // }
 }
 
 export const UserResolvers = {mutation, queries};
