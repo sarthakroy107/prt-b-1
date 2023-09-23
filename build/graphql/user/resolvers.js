@@ -13,10 +13,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResolvers = void 0;
+const bson_1 = require("bson");
+const DirectMessages_1 = __importDefault(require("../../models/DirectMessages"));
+const Message_1 = __importDefault(require("../../models/Message"));
 const User_1 = __importDefault(require("../../models/User"));
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 const graphql_1 = require("graphql");
+const chatServices_1 = require("../../services/chatServices");
 require('dotenv').config();
 const mutation = {
     createUser: (_, { name, email, password, username }) => __awaiter(void 0, void 0, void 0, function* () {
@@ -37,6 +41,19 @@ const mutation = {
             return new Error("Something went wrong in signup");
         }
     }),
+    sendMessage: (_, { receiverId, text, files }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            let coversation = yield DirectMessages_1.default.findOne({ members: { $all: [receiverId, context.user.id] } });
+            if (!coversation) {
+                coversation = yield DirectMessages_1.default.create({ members: [receiverId, context.user.id] });
+            }
+            const message = yield Message_1.default.create({ conversationId: coversation._id, sender: context.user.id, text, files });
+            return true;
+        }
+        catch (error) {
+            throw new graphql_1.GraphQLError("Something went wrong in sendMessage");
+        }
+    })
 };
 const queries = {
     hello: () => "Hello",
@@ -152,20 +169,25 @@ const queries = {
             console.log(error);
         }
     }),
-    // sendMessage: async (_: any, { receiverId, text, files } : { conversationId: string, receiverId: string, text: string, files: string[] }, context: any ) => {
-    //     try {
-    //         let coversation: any = await DirectMessage.create({ member: [receiverId, context.user.id]})
-    //         if(!coversation) {
-    //             coversation = await DirectMessage.findOne({ members: {$all: [receiverId, context.user.id]}});
-    //         }
-    //         if(!coversation) {
-    //             coversation = await DirectMessage.create({ member: [receiverId, context.user.id]})
-    //         }
-    //         const message = await Message.create({conversationId: coversation._id, sender: context.user.id, text, files});
-    //         return message;
-    //     } catch (error) {
-    //         throw new GraphQLError("Something went wrong in sendMessage");
-    //     }
-    // }
+    userChats: (_, p, context) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const chats = yield DirectMessages_1.default.find({ members: { $in: [context.user.id] } }).populate({
+                path: "members",
+                match: { _id: { $ne: new bson_1.ObjectId(context.user.id) } },
+                select: "name username _id profileImageUrl blue"
+            });
+            let formated_chats = [];
+            for (const chat of chats) {
+                const latestChat = yield Message_1.default.findOne({ conversationId: chat._id }).sort({ createdAt: -1 });
+                const formated_chat_details = (0, chatServices_1.format_conversation_details)(chat, context.user.id, latestChat);
+                formated_chats.push(formated_chat_details);
+            }
+            ;
+            return formated_chats;
+        }
+        catch (error) {
+            throw new graphql_1.GraphQLError("Something went wrong in userChats");
+        }
+    }),
 };
 exports.UserResolvers = { mutation, queries };

@@ -9,4 +9,5 @@ exports.Queries = `#graphql
     fetchUserDetailsWithUsername(username: String!): User
     fetchUserWithEmail(email: String!, password: String!): User
     userLogin(email: String!, password:String!): User
+    userChats: [ConversationDetails]!
 `;

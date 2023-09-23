@@ -67,7 +67,7 @@ export interface responeTypeDef {
   author_display_name:  string;
   author_username:      string;
   author_profile_image: string;
-  text:                 string | null;
+  text:                 string   | null;
   files:                string[] | null;
   is_liked:             boolean;
   like_count:           number;
@@ -82,6 +82,19 @@ export interface responeTypeDef {
   in_reply_to_username: string;
   created_at:           Date | string;
   updated_at:           Date | string;
-  views_count:           number;
+  views_count:          number;
 
+}
+
+export interface conversationTypeDef {
+  conversation_id:      mongoose.Types.ObjectId | string;
+  to_user_id:           mongoose.Types.ObjectId | string;
+  to_user_display_name: string;
+  to_user_profile_image:string;
+  to_user_blue:         boolean;
+  to_user_username:     string;
+  from_user_id:         mongoose.Types.ObjectId | string;
+  latest_message_text:  string | null;
+  latest_message_files: string[] | null;
+  latest_message_date:  Date | string;
 }

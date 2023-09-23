@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 
 const DirectMessageSchema = new mongoose.Schema({
-    member: [{
+    members: [{
         type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
         required: true,
     }]
 }, {timestamps: true});
