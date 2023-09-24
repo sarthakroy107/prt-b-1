@@ -8,4 +8,5 @@ export const Queries = `#graphql
     fetchUserWithEmail(email: String!, password: String!): User
     userLogin(email: String!, password:String!): User
     userChats: [ConversationDetails]!
+    userChatMessages(conversationId: String!): ConversationDetailsWithChat!
 `

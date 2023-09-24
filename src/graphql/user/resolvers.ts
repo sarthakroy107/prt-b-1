@@ -5,8 +5,8 @@ import User from "../../models/User";
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken")
 import { GraphQLError } from 'graphql';
-import { format_conversation_details } from "../../services/chatServices";
-import { conversationTypeDef } from "../../config/typeConfig";
+import { format_conversation_details, formated_chats } from "../../services/chatServices";
+import { chatDetailsTypeDef, conversationTypeDef } from "../../config/typeConfig";
 require('dotenv').config()
 
 const mutation = {
@@ -194,7 +194,9 @@ const queries = {
                 match: { _id: { $ne: new ObjectId(context.user.id) } },
                 select: "name username _id profileImageUrl blue"
             });
+
             let formated_chats: conversationTypeDef[] = [];
+
             for(const chat of chats) {
                 const latestChat = await Message.findOne({ conversationId: chat._id }).sort({ createdAt: -1 });
                 const formated_chat_details = format_conversation_details(chat, context.user.id, latestChat);
@@ -207,6 +209,27 @@ const queries = {
             throw new GraphQLError("Something went wrong in userChats");
         }
     },
+
+    userChatMessages: async (_: any, { conversationId }: { conversationId: string }, context: any) => {
+        try {
+            const coversation = await DirectMessage.findOne({ _id: conversationId }).populate({
+                path: "members",
+                match: { _id: { $ne: new ObjectId(context.user.id) } },
+                select: "name username _id profileImageUrl blue"
+            });
+
+            if (!coversation) throw new GraphQLError("Conversation not found");
+
+            const messages = await Message.find({ conversationId })
+            
+
+            const formated_object: chatDetailsTypeDef = formated_chats(messages, context.user.id, coversation.members[0]);
+
+            return formated_object;
+        } catch (error) {
+            throw new GraphQLError("Something went wrong in userChat");
+        }
+    }
 }
 
 export const UserResolvers = { mutation, queries };

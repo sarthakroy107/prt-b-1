@@ -107,4 +107,23 @@ exports.typeDefs = `#graphql
         latest_message_files:  [String]!
         latest_message_date:   String!
     }
+
+    type ChatBody {
+        _id:        String!
+        sender_id:  String!
+        text:       String
+        files:      [String]
+        created_at: String!
+    }
+
+    type ConversationDetailsWithChat {
+        conversation_id:       String!
+        to_user_id:            String!
+        to_user_display_name:  String!
+        to_user_profile_image: String!
+        to_user_blue:          Boolean!
+        to_user_username:      String!
+        from_user_id:          String!
+        chats:                 [ChatBody]!
+    }
 `;

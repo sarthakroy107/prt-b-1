@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.format_conversation_details = void 0;
+exports.formated_chats = exports.format_conversation_details = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const format_conversation_details = (conversation, from_user_id, latest_message) => {
     console.log(conversation, from_user_id);
@@ -22,3 +22,28 @@ const format_conversation_details = (conversation, from_user_id, latest_message)
     return object;
 };
 exports.format_conversation_details = format_conversation_details;
+const formated_chats = (chats, userId, toUser) => {
+    let formated_chats = [];
+    for (const chat of chats) {
+        const formated_chat = {
+            _id: chat._id,
+            sender_id: chat.sender,
+            text: chat.text === undefined ? null : chat.text,
+            files: chat.files === undefined ? [] : chat.files,
+            created_at: chat.createdAt,
+        };
+        formated_chats.push(formated_chat);
+    }
+    const formated_chats_full_details = {
+        conversation_id: chats[0].conversationId,
+        to_user_id: toUser._id,
+        to_user_display_name: toUser.name,
+        to_user_profile_image: toUser.profileImageUrl,
+        to_user_blue: toUser.blue,
+        to_user_username: toUser.username,
+        from_user_id: new mongoose_1.default.Types.ObjectId(userId),
+        chats: formated_chats,
+    };
+    return formated_chats_full_details;
+};
+exports.formated_chats = formated_chats;

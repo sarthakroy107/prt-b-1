@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { conversationTypeDef } from "../config/typeConfig";
+import { chatDetailsTypeDef, chatObjectTypeDef, conversationTypeDef } from "../config/typeConfig";
 
 export const format_conversation_details = (conversation: any, from_user_id: string, latest_message: any): conversationTypeDef => {
     console.log(conversation, from_user_id);
@@ -17,3 +17,31 @@ export const format_conversation_details = (conversation: any, from_user_id: str
     }
     return object;
 };
+
+export const formated_chats = (chats: any[], userId: string, toUser: any) => {
+    let formated_chats: chatObjectTypeDef[] = [];
+
+    for(const chat of chats) {
+        const formated_chat: chatObjectTypeDef = {
+            _id:        chat._id,
+            sender_id:  chat.sender,
+            text:       chat.text === undefined ? null : chat.text,
+            files:      chat.files === undefined ? [] : chat.files,
+            created_at: chat.createdAt,
+        }
+        formated_chats.push(formated_chat);
+    }
+
+    const formated_chats_full_details: chatDetailsTypeDef = {
+        conversation_id:       chats[0].conversationId,
+        to_user_id:            toUser._id,
+        to_user_display_name:  toUser.name,
+        to_user_profile_image: toUser.profileImageUrl,
+        to_user_blue:          toUser.blue,
+        to_user_username:      toUser.username,
+        from_user_id:          new mongoose.Types.ObjectId(userId),
+        chats:                 formated_chats,
+    }
+
+    return formated_chats_full_details;
+}

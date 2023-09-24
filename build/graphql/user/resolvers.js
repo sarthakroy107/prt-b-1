@@ -189,5 +189,22 @@ const queries = {
             throw new graphql_1.GraphQLError("Something went wrong in userChats");
         }
     }),
+    userChatMessages: (_, { conversationId }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const coversation = yield DirectMessages_1.default.findOne({ _id: conversationId }).populate({
+                path: "members",
+                match: { _id: { $ne: new bson_1.ObjectId(context.user.id) } },
+                select: "name username _id profileImageUrl blue"
+            });
+            if (!coversation)
+                throw new graphql_1.GraphQLError("Conversation not found");
+            const messages = yield Message_1.default.find({ conversationId });
+            const formated_object = (0, chatServices_1.formated_chats)(messages, context.user.id, coversation.members[0]);
+            return formated_object;
+        }
+        catch (error) {
+            throw new graphql_1.GraphQLError("Something went wrong in userChat");
+        }
+    })
 };
 exports.UserResolvers = { mutation, queries };
