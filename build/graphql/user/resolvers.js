@@ -191,20 +191,39 @@ const queries = {
     }),
     userChatMessages: (_, { conversationId }, context) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const coversation = yield DirectMessages_1.default.findOne({ _id: conversationId }).populate({
-                path: "members",
-                match: { _id: { $ne: new bson_1.ObjectId(context.user.id) } },
-                select: "name username _id profileImageUrl blue"
-            });
-            if (!coversation)
-                throw new graphql_1.GraphQLError("Conversation not found");
             const messages = yield Message_1.default.find({ conversationId });
-            const formated_object = (0, chatServices_1.formated_chats)(messages, context.user.id, coversation.members[0]);
+            const formated_object = (0, chatServices_1.formated_chats)(messages);
             return formated_object;
         }
         catch (error) {
             throw new graphql_1.GraphQLError("Something went wrong in userChat");
         }
-    })
+    }),
+    specificUserConversationDetails: (_, { conversationId }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b, _c, _d, _e;
+        try {
+            const conversation = yield DirectMessages_1.default.findOne({ _id: conversationId }).populate({
+                path: "members",
+                match: { _id: { $ne: new bson_1.ObjectId(context.user.id) } },
+                select: "name username _id profileImageUrl blue"
+            });
+            if (!conversation)
+                throw new graphql_1.GraphQLError("Conversation not found");
+            const formated_sender_details = {
+                conversation_id: conversation._id,
+                to_user_id: (_a = conversation.members[0]) === null || _a === void 0 ? void 0 : _a._id,
+                to_user_display_name: (_b = conversation.members[0]) === null || _b === void 0 ? void 0 : _b.name,
+                to_user_profile_image: (_c = conversation.members[0]) === null || _c === void 0 ? void 0 : _c.profileImageUrl,
+                to_user_blue: (_d = conversation.members[0]) === null || _d === void 0 ? void 0 : _d.blue,
+                to_user_username: (_e = conversation.members[0]) === null || _e === void 0 ? void 0 : _e.username,
+                from_user_id: context.user.id,
+            };
+            console.log(formated_sender_details);
+            return formated_sender_details;
+        }
+        catch (error) {
+            throw new graphql_1.GraphQLError("Something went wrong in userChat");
+        }
+    }),
 };
 exports.UserResolvers = { mutation, queries };

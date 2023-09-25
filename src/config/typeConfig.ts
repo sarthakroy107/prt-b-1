@@ -107,7 +107,7 @@ export interface chatObjectTypeDef {
   created_at:            Date | string;
 }
 
-export interface chatDetailsTypeDef {
+export interface chat_sender_TypeDef {
   conversation_id:       mongoose.Types.ObjectId | string;
   to_user_id:            mongoose.Types.ObjectId | string;
   to_user_display_name:  string;
@@ -115,5 +115,4 @@ export interface chatDetailsTypeDef {
   to_user_blue:          boolean;
   to_user_username:      string;
   from_user_id:          mongoose.Types.ObjectId | string;
-  chats:                 chatObjectTypeDef[];
 }

@@ -116,7 +116,7 @@ exports.typeDefs = `#graphql
         created_at: String!
     }
 
-    type ConversationDetailsWithChat {
+    type Conversation_User_Details {
         conversation_id:       String!
         to_user_id:            String!
         to_user_display_name:  String!
@@ -124,6 +124,5 @@ exports.typeDefs = `#graphql
         to_user_blue:          Boolean!
         to_user_username:      String!
         from_user_id:          String!
-        chats:                 [ChatBody]!
     }
 `;

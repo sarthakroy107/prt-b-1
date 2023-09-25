@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken")
 import { GraphQLError } from 'graphql';
 import { format_conversation_details, formated_chats } from "../../services/chatServices";
-import { chatDetailsTypeDef, conversationTypeDef } from "../../config/typeConfig";
+import { chatObjectTypeDef, chat_sender_TypeDef, conversationTypeDef } from "../../config/typeConfig";
 require('dotenv').config()
 
 const mutation = {
@@ -212,24 +212,43 @@ const queries = {
 
     userChatMessages: async (_: any, { conversationId }: { conversationId: string }, context: any) => {
         try {
-            const coversation = await DirectMessage.findOne({ _id: conversationId }).populate({
-                path: "members",
-                match: { _id: { $ne: new ObjectId(context.user.id) } },
-                select: "name username _id profileImageUrl blue"
-            });
-
-            if (!coversation) throw new GraphQLError("Conversation not found");
-
             const messages = await Message.find({ conversationId })
             
 
-            const formated_object: chatDetailsTypeDef = formated_chats(messages, context.user.id, coversation.members[0]);
+            const formated_object: chatObjectTypeDef[] = formated_chats(messages);
 
             return formated_object;
         } catch (error) {
             throw new GraphQLError("Something went wrong in userChat");
         }
-    }
+    },
+
+    specificUserConversationDetails: async (_: any, { conversationId }: { conversationId: string }, context: any) => {
+        try {
+            const conversation: any = await DirectMessage.findOne({ _id: conversationId }).populate({
+                path: "members",
+                match: { _id: { $ne: new ObjectId(context.user.id) } },
+                select: "name username _id profileImageUrl blue"
+            });
+
+            if(!conversation) throw new GraphQLError("Conversation not found");
+
+            const formated_sender_details: chat_sender_TypeDef = {
+                conversation_id:       conversation._id,
+                to_user_id:            conversation.members[0]?._id,
+                to_user_display_name:  conversation.members[0]?.name,
+                to_user_profile_image: conversation.members[0]?.profileImageUrl,
+                to_user_blue:          conversation.members[0]?.blue,
+                to_user_username:      conversation.members[0]?.username,
+                from_user_id:          context.user.id,
+            }
+            console.log(formated_sender_details);
+            return formated_sender_details;
+
+        } catch (error) {
+            throw new GraphQLError("Something went wrong in userChat");
+        }
+    },
 }
 
 export const UserResolvers = { mutation, queries };
