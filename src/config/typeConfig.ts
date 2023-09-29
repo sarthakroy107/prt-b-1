@@ -106,7 +106,6 @@ export interface chatObjectTypeDef {
   files:                 string[] | null;
   created_at:            Date | string;
 }
-
 export interface chat_sender_TypeDef {
   conversation_id:       mongoose.Types.ObjectId | string;
   to_user_id:            mongoose.Types.ObjectId | string;
