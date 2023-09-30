@@ -43,6 +43,7 @@ const cors_1 = __importDefault(require("cors"));
 const http = __importStar(require("http"));
 const JWT_1 = require("./services/JWT");
 const socket_io_1 = require("socket.io");
+const Message_1 = __importDefault(require("./models/Message"));
 require('dotenv').config();
 (0, database_1.default)();
 const authRoutes = require('./routes/authRoute');
@@ -74,7 +75,7 @@ const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {
     const server = http.createServer(app);
     const io = new socket_io_1.Server(server, {
         cors: {
-            origin: "http://localhost:3000",
+            origin: "*",
             methods: ["GET", "POST", "PUT", "DELETE"],
         },
     });
@@ -82,7 +83,24 @@ const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {
         return res.send("Sever is running");
     });
     io.on('connection', (socket) => {
-        console.log("Socket connected");
+        console.log("Socket connected:" + socket.id);
+        socket.on("join_room", (data) => {
+            socket.join(data);
+            console.log("User joined room: " + data);
+        });
+        socket.on("send_message", (data) => __awaiter(void 0, void 0, void 0, function* () {
+            console.log(data);
+            const newMessage = yield Message_1.default.create({ conversationId: data.conversationId, sender: data.senderId, text: data.text, files: data.files === undefined ? [] : data.files });
+            const createdAtString = newMessage.createdAt.toISOString();
+            const formatedMessage = {
+                _id: newMessage._id,
+                sender_id: newMessage.sender,
+                text: newMessage.text === undefined ? null : newMessage.text,
+                files: newMessage.files === undefined ? [] : newMessage.files,
+                created_at: Date.parse(createdAtString).toString(),
+            };
+            socket.to(data.conversationId).emit("receive_message", formatedMessage);
+        }));
         socket.on('disconnect', () => {
             console.log("Socket disconnected");
         });

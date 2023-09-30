@@ -6,6 +6,8 @@ interface Message {
     text: string;
     files: string[];
 }
+
+
 const MessageSchema = new mongoose.Schema({
     conversationId: {
         type: mongoose.Schema.Types.ObjectId,

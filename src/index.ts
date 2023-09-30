@@ -6,6 +6,8 @@ import cors from 'cors';
 import * as http from 'http';
 import { verifyJWT } from "./services/JWT";
 import { Server } from "socket.io";
+import Message from "./models/Message";
+import { chatObjectTypeDef } from "./config/typeConfig";
 require('dotenv').config()
 
 connect()
@@ -47,7 +49,7 @@ const gqlFunc = async () =>{
   const server = http.createServer(app);
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: "*",
       methods: ["GET", "POST", "PUT", "DELETE"],
     },
   });
@@ -58,11 +60,37 @@ const gqlFunc = async () =>{
   })
 
   io.on('connection', (socket)=>{
-    console.log("Socket connected")
+
+    console.log("Socket connected:" + socket.id)
+
+
+    socket.on("join_room",  (data) => {
+      socket.join(data);
+      console.log("User joined room: " + data);
+    });
+
+    socket.on("send_message", async (data) => {
+      console.log(data);
+      const newMessage = await Message.create({ conversationId: data.conversationId, sender: data.senderId, text: data.text, files: data.files === undefined ? [] : data.files });
+      const createdAtString = newMessage.createdAt.toISOString();
+
+      const formatedMessage: chatObjectTypeDef = {
+        _id:        newMessage._id,
+        sender_id:  newMessage.sender,
+        text:       newMessage.text === undefined ? null : newMessage.text,
+        files:      newMessage.files === undefined ? [] : newMessage.files,
+        created_at: Date.parse(createdAtString).toString(),
+      }
+
+      socket.to(data.conversationId).emit("receive_message", formatedMessage);
+    });
+
     socket.on('disconnect', ()=>{
       console.log("Socket disconnected")
-    })
+    });
+
   })
+
   app.use('/api/v1', authRoutes)
   app.use('/api/v1', userRoutes)
 
