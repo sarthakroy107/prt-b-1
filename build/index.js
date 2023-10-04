@@ -96,7 +96,7 @@ const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {
                 _id: newMessage._id,
                 sender_id: newMessage.sender,
                 text: newMessage.text === undefined ? null : newMessage.text,
-                files: newMessage.files === undefined ? [] : newMessage.files,
+                files: newMessage.files === undefined || newMessage === null ? [] : newMessage.files,
                 created_at: Date.parse(createdAtString).toString(),
             };
             socket.to(data.conversationId).emit("receive_message", formatedMessage);

@@ -78,7 +78,7 @@ const gqlFunc = async () =>{
         _id:        newMessage._id,
         sender_id:  newMessage.sender,
         text:       newMessage.text === undefined ? null : newMessage.text,
-        files:      newMessage.files === undefined ? [] : newMessage.files,
+        files:      newMessage.files === undefined || newMessage === null ? [] : newMessage.files,
         created_at: Date.parse(createdAtString).toString(),
       }
 

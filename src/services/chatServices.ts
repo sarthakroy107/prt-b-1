@@ -29,7 +29,7 @@ export const formated_chats = (chats: any[]): chatObjectTypeDef[] => {
             files:      chat.files === undefined ? [] : chat.files,
             created_at: chat.createdAt,
         }
-        formated_chats.push(formated_chat);
+        formated_chats.push(formated_chat)
     }
 
     return formated_chats;
