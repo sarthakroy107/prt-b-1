@@ -251,4 +251,4 @@ const queries = {
     },
 }
 
-export const UserResolvers = { mutation, queries };
+export const UserResolvers = { mutation, queries }
