@@ -63,5 +63,6 @@ const UserSchema = new mongoose_1.default.Schema({
         default: "dummy_string"
     },
 }, { timestamps: true });
+UserSchema.index({ name: 'text', username: 'text' });
 const User = mongoose_1.default.model("User", UserSchema);
 exports.default = User;

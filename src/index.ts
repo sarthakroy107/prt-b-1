@@ -7,7 +7,10 @@ import * as http from 'http';
 import { verifyJWT } from "./services/JWT";
 import { Server } from "socket.io";
 import Message from "./models/Message";
-import { chatObjectTypeDef } from "./config/typeConfig";
+import { chatObjectTypeDef, chat_sender_TypeDef } from "./config/typeConfig";
+import { autoCompleteUser } from "./services/socketIO/user";
+import DirectMessage from "./models/DirectMessages";
+import User from "./models/User";
 require('dotenv').config()
 
 connect()
@@ -64,9 +67,27 @@ const gqlFunc = async () =>{
     console.log("Socket connected:" + socket.id)
 
 
-    socket.on("join_room",  (data) => {
+    socket.on("join_room", (data) => {
       socket.join(data);
       console.log("User joined room: " + data);
+    });
+
+    socket.on("create_conversation", async (data) => {
+      console.log(data);
+      const fromUser =  await User.findOne({username: data.from_user_id})
+      const toUser = await User.findOne({username: data.to_user_username})
+      const arr: any = [fromUser!._id, toUser!._id]
+      const newConversation = await DirectMessage.create({ members: arr });
+      const obj: chat_sender_TypeDef = {
+        conversation_id:       newConversation._id,
+        to_user_id:            toUser!._id as string,
+        to_user_display_name:  toUser!.name,
+        to_user_profile_image: toUser!.profileImageUrl,
+        to_user_blue:          toUser!.blue,
+        to_user_username:      toUser!.username,
+        from_user_id:          fromUser!._id as string,
+      }
+      socket.emit("conversation_created", obj)
     });
 
     socket.on("send_message", async (data) => {
@@ -84,6 +105,12 @@ const gqlFunc = async () =>{
 
       socket.to(data.conversationId).emit("receive_message", formatedMessage);
     });
+
+    socket.on("autocomplete_profile_search", async (data)=> {
+      const accounts = await autoCompleteUser(data);
+      console.log(accounts)
+      socket.emit("autocomplete_profile_search_results", accounts);
+    })
 
     socket.on('disconnect', ()=>{
       console.log("Socket disconnected")

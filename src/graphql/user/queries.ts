@@ -9,5 +9,6 @@ export const Queries = `#graphql
     userLogin(email: String!, password:String!): User
     userChats: [ConversationDetails]!
     userChatMessages(conversationId: String!): [ChatBody]!
-    specificUserConversationDetails(conversationId: String!): Conversation_User_Details!
+    specificUserConversationDetails(to_username: String!): Conversation_User_Details
+    searchUser(searchString: String!): Boolean!
 `

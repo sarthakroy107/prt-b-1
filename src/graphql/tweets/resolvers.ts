@@ -6,6 +6,7 @@ import { format_tweet_to_respose_format } from "../../services/tweetSeivices";
 
 const mutation = {
   createTweet: async (_: any, { text, files }: { text: string | undefined, files: [string] | undefined }, context: any) => {
+    console.log(text, files)
     const tweet = await Tweet.create({ text, files, author_id: context.user.id});
     
     await User.findByIdAndUpdate(

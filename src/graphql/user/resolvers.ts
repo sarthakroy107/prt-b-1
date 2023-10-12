@@ -70,6 +70,14 @@ const queries = {
                     $match: { email }
                 },
                 {
+                    $lookup: {
+                      from: 'tweets', // Replace with the name of your tweets collection
+                      localField: '_id',
+                      foreignField: 'author_id',
+                      as: 'tweets'
+                    }
+                  },
+                {
                     $addFields: {
                         tweetCount: { $size: "$tweets" },
                         followersCount: { $size: "$followers" },
@@ -82,17 +90,6 @@ const queries = {
             ])
             console.log("uSer: ")
             console.log(uSer[0])
-
-            // const user = await User.findOne({email});
-            // if(!user) throw new GraphQLError(`User with email: ${email} does not exists`);
-            // console.log(user);
-            // const extendedUser = {
-            //     //@ts-ignore
-            //     ...user._doc,
-            //     tweetCount: user.tweets.length,
-            //     followersCount: user.followers.length,
-            //     followingCount: user.following.length,
-            // }
 
             return uSer[0]
         }
@@ -163,6 +160,17 @@ const queries = {
         }
     },
 
+    searchUser: async (_:any, {searchString}: {searchString: string}) => {
+        try {
+            console.log(searchString)
+            const users = await User.find({ $text: { $search: searchString, $caseSensitive: false } });
+            console.log(users);
+        } catch (error) {
+            console.log(error)
+        }
+        return true
+    },
+
     userLogin: async (_: any, { email, password }: { email: string, password: string }) => {
         try {
             console.log("userLogin called through graphql")
@@ -223,15 +231,31 @@ const queries = {
         }
     },
 
-    specificUserConversationDetails: async (_: any, { conversationId }: { conversationId: string }, context: any) => {
+    specificUserConversationDetails: async (_: any, { to_username }: { to_username: string }, context: any) => {
         try {
-            const conversation: any = await DirectMessage.findOne({ _id: conversationId }).populate({
+            const toUser = await User.findOne({ username: to_username });
+            if(!toUser) throw new GraphQLError("User not found");
+            console.log(toUser);
+
+            const conversation: any = await DirectMessage.findOne({ members: { $all: [toUser._id, new ObjectId(context.user.id)] } }).populate({
                 path: "members",
                 match: { _id: { $ne: new ObjectId(context.user.id) } },
                 select: "name username _id profileImageUrl blue"
             });
+            console.log(conversation);
 
-            if(!conversation) throw new GraphQLError("Conversation not found");
+            if(!conversation) {
+                const formated_sender_details: chat_sender_TypeDef = {
+                    conversation_id:       null,
+                    to_user_id:            toUser._id as string,
+                    to_user_display_name:  toUser.name,
+                    to_user_profile_image: toUser.profileImageUrl,
+                    to_user_blue:          toUser.blue,
+                    to_user_username:      toUser.username,
+                    from_user_id:          context.user.id,
+                }
+                return formated_sender_details;
+            }
 
             const formated_sender_details: chat_sender_TypeDef = {
                 conversation_id:       conversation._id,

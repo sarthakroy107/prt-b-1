@@ -107,7 +107,7 @@ export interface chatObjectTypeDef {
   created_at:            Date | string;
 }
 export interface chat_sender_TypeDef {
-  conversation_id:       mongoose.Types.ObjectId | string;
+  conversation_id:       mongoose.Types.ObjectId | string | null;
   to_user_id:            mongoose.Types.ObjectId | string;
   to_user_display_name:  string;
   to_user_profile_image: string;

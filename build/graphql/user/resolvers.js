@@ -70,6 +70,14 @@ const queries = {
                     $match: { email }
                 },
                 {
+                    $lookup: {
+                        from: 'tweets',
+                        localField: '_id',
+                        foreignField: 'author_id',
+                        as: 'tweets'
+                    }
+                },
+                {
                     $addFields: {
                         tweetCount: { $size: "$tweets" },
                         followersCount: { $size: "$followers" },
@@ -82,16 +90,6 @@ const queries = {
             ]);
             console.log("uSer: ");
             console.log(uSer[0]);
-            // const user = await User.findOne({email});
-            // if(!user) throw new GraphQLError(`User with email: ${email} does not exists`);
-            // console.log(user);
-            // const extendedUser = {
-            //     //@ts-ignore
-            //     ...user._doc,
-            //     tweetCount: user.tweets.length,
-            //     followersCount: user.followers.length,
-            //     followingCount: user.following.length,
-            // }
             return uSer[0];
         }
         catch (err) {
@@ -142,6 +140,17 @@ const queries = {
         catch (err) {
             return err;
         }
+    }),
+    searchUser: (_, { searchString }) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            console.log(searchString);
+            const users = yield User_1.default.find({ $text: { $search: searchString, $caseSensitive: false } });
+            console.log(users);
+        }
+        catch (error) {
+            console.log(error);
+        }
+        return true;
     }),
     userLogin: (_, { email, password }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
@@ -199,16 +208,31 @@ const queries = {
             throw new graphql_1.GraphQLError("Something went wrong in userChat");
         }
     }),
-    specificUserConversationDetails: (_, { conversationId }, context) => __awaiter(void 0, void 0, void 0, function* () {
+    specificUserConversationDetails: (_, { to_username }, context) => __awaiter(void 0, void 0, void 0, function* () {
         var _a, _b, _c, _d, _e;
         try {
-            const conversation = yield DirectMessages_1.default.findOne({ _id: conversationId }).populate({
+            const toUser = yield User_1.default.findOne({ username: to_username });
+            if (!toUser)
+                throw new graphql_1.GraphQLError("User not found");
+            console.log(toUser);
+            const conversation = yield DirectMessages_1.default.findOne({ members: { $all: [toUser._id, new bson_1.ObjectId(context.user.id)] } }).populate({
                 path: "members",
                 match: { _id: { $ne: new bson_1.ObjectId(context.user.id) } },
                 select: "name username _id profileImageUrl blue"
             });
-            if (!conversation)
-                throw new graphql_1.GraphQLError("Conversation not found");
+            console.log(conversation);
+            if (!conversation) {
+                const formated_sender_details = {
+                    conversation_id: null,
+                    to_user_id: toUser._id,
+                    to_user_display_name: toUser.name,
+                    to_user_profile_image: toUser.profileImageUrl,
+                    to_user_blue: toUser.blue,
+                    to_user_username: toUser.username,
+                    from_user_id: context.user.id,
+                };
+                return formated_sender_details;
+            }
             const formated_sender_details = {
                 conversation_id: conversation._id,
                 to_user_id: (_a = conversation.members[0]) === null || _a === void 0 ? void 0 : _a._id,

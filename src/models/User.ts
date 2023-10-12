@@ -62,5 +62,7 @@ const UserSchema: Schema = new mongoose.Schema<userTypeDef>({
     },
 }, {timestamps: true})
 
+UserSchema.index({ name: 'text', username: 'text' });
+
 const User = mongoose.model<userTypeDef>("User", UserSchema);
 export default User

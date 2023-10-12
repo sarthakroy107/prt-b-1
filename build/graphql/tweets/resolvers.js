@@ -20,6 +20,7 @@ const User_1 = __importDefault(require("../../models/User"));
 const tweetSeivices_1 = require("../../services/tweetSeivices");
 const mutation = {
     createTweet: (_, { text, files }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(text, files);
         const tweet = yield Tweet_1.default.create({ text, files, author_id: context.user.id });
         yield User_1.default.findByIdAndUpdate(context.user.id, { $push: { tweets: tweet._id } });
         return tweet;
