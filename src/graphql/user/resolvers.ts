@@ -88,8 +88,8 @@ const queries = {
                     $limit: 1
                 }
             ])
-            console.log("uSer: ")
-            console.log(uSer[0])
+            //console.log("uSer: ")
+            //console.log(uSer[0])
 
             return uSer[0]
         }
@@ -116,11 +116,11 @@ const queries = {
                     }
                 }
             ])
-            console.log(uSer)
+            //console.log(uSer)
 
             const user = await User.findOne({ username });
             if (!user) throw new GraphQLError(`User with email: ${username} does not exists`);
-            console.log(user);
+            //console.log(user);
             const extendedUser = {
                 //@ts-ignore
                 ...user._doc,
@@ -145,11 +145,11 @@ const queries = {
 
             if (!bcrypt.compare(password, user.password)) return new Error("Password does not match")
 
-            console.log(process.env.JWT_SECRET)
+            //console.log(process.env.JWT_SECRET)
 
             const token = jwt.sign({ name: user.name, email: user.email }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
-            console.log(process.env.JWT_SECRET)
+            //console.log(process.env.JWT_SECRET)
             user.password = "I love mahiru"
             user.token = token
             return user
@@ -173,7 +173,7 @@ const queries = {
 
     userLogin: async (_: any, { email, password }: { email: string, password: string }) => {
         try {
-            console.log("userLogin called through graphql")
+            //console.log("userLogin called through graphql")
             const account = await User.findOne({ email });
             if (!account) throw new Error("User not found");
             if (!bcrypt.compare(password, account.password)) return new Error("Password do not match");
@@ -182,7 +182,7 @@ const queries = {
                 id: account._id
             }
             try {
-                console.log(process.env.JWT_SECRET)
+                //console.log(process.env.JWT_SECRET)
                 const token = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: "72h" });
                 account.token = token;
                 return account;
@@ -197,11 +197,15 @@ const queries = {
 
     userChats: async (_: any, p: any, context: any) => {
         try {
-            const chats = await DirectMessage.find({ members: { $in: [context.user.id] } }).populate({
+            console.log("IN userChat")
+            console.log(context.user.id)
+            const chats = await DirectMessage.find({ members: { $in: [new ObjectId(context.user.id)] } }).populate({
                 path: "members",
                 match: { _id: { $ne: new ObjectId(context.user.id) } },
                 select: "name username _id profileImageUrl blue"
             });
+
+            console.log(chats)
 
             let formated_chats: conversationTypeDef[] = [];
 
@@ -214,6 +218,7 @@ const queries = {
             return formated_chats
 
         } catch (error) {
+            console.log(error);
             throw new GraphQLError("Something went wrong in userChats");
         }
     },
@@ -235,14 +240,14 @@ const queries = {
         try {
             const toUser = await User.findOne({ username: to_username });
             if(!toUser) throw new GraphQLError("User not found");
-            console.log(toUser);
+            //console.log(toUser);
 
             const conversation: any = await DirectMessage.findOne({ members: { $all: [toUser._id, new ObjectId(context.user.id)] } }).populate({
                 path: "members",
                 match: { _id: { $ne: new ObjectId(context.user.id) } },
                 select: "name username _id profileImageUrl blue"
             });
-            console.log(conversation);
+            //console.log(conversation);
 
             if(!conversation) {
                 const formated_sender_details: chat_sender_TypeDef = {
@@ -266,11 +271,11 @@ const queries = {
                 to_user_username:      conversation.members[0]?.username,
                 from_user_id:          context.user.id,
             }
-            console.log(formated_sender_details);
+            //console.log(formated_sender_details);
             return formated_sender_details;
 
         } catch (error) {
-            throw new GraphQLError("Something went wrong in userChat");
+            throw new GraphQLError("Something went wrong in specificUserConversationDetails");
         }
     },
 }

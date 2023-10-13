@@ -115,3 +115,11 @@ export interface chat_sender_TypeDef {
   to_user_username:      string;
   from_user_id:          mongoose.Types.ObjectId | string;
 }
+
+export type message_data_type = {
+  text: string | null;
+  files: string[] | null;
+  conversationId: string | null;
+  senderId: string;
+  to_user_id: string;
+}

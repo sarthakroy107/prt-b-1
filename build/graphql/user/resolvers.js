@@ -88,8 +88,8 @@ const queries = {
                     $limit: 1
                 }
             ]);
-            console.log("uSer: ");
-            console.log(uSer[0]);
+            //console.log("uSer: ")
+            //console.log(uSer[0])
             return uSer[0];
         }
         catch (err) {
@@ -111,11 +111,11 @@ const queries = {
                     }
                 }
             ]);
-            console.log(uSer);
+            //console.log(uSer)
             const user = yield User_1.default.findOne({ username });
             if (!user)
                 throw new graphql_1.GraphQLError(`User with email: ${username} does not exists`);
-            console.log(user);
+            //console.log(user);
             const extendedUser = Object.assign(Object.assign({}, user._doc), { tweetCount: user.tweets.length, followersCount: user.followers.length, followingCount: user.following.length });
             return extendedUser;
         }
@@ -130,9 +130,9 @@ const queries = {
                 return new Error("User does not exist");
             if (!bcrypt.compare(password, user.password))
                 return new Error("Password does not match");
-            console.log(process.env.JWT_SECRET);
+            //console.log(process.env.JWT_SECRET)
             const token = jwt.sign({ name: user.name, email: user.email }, process.env.JWT_SECRET, { expiresIn: '2h' });
-            console.log(process.env.JWT_SECRET);
+            //console.log(process.env.JWT_SECRET)
             user.password = "I love mahiru";
             user.token = token;
             return user;
@@ -154,7 +154,7 @@ const queries = {
     }),
     userLogin: (_, { email, password }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            console.log("userLogin called through graphql");
+            //console.log("userLogin called through graphql")
             const account = yield User_1.default.findOne({ email });
             if (!account)
                 throw new Error("User not found");
@@ -165,7 +165,7 @@ const queries = {
                 id: account._id
             };
             try {
-                console.log(process.env.JWT_SECRET);
+                //console.log(process.env.JWT_SECRET)
                 const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "72h" });
                 account.token = token;
                 return account;
@@ -180,11 +180,14 @@ const queries = {
     }),
     userChats: (_, p, context) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const chats = yield DirectMessages_1.default.find({ members: { $in: [context.user.id] } }).populate({
+            console.log("IN userChat");
+            console.log(context.user.id);
+            const chats = yield DirectMessages_1.default.find({ members: { $in: [new bson_1.ObjectId(context.user.id)] } }).populate({
                 path: "members",
                 match: { _id: { $ne: new bson_1.ObjectId(context.user.id) } },
                 select: "name username _id profileImageUrl blue"
             });
+            console.log(chats);
             let formated_chats = [];
             for (const chat of chats) {
                 const latestChat = yield Message_1.default.findOne({ conversationId: chat._id }).sort({ createdAt: -1 });
@@ -195,6 +198,7 @@ const queries = {
             return formated_chats;
         }
         catch (error) {
+            console.log(error);
             throw new graphql_1.GraphQLError("Something went wrong in userChats");
         }
     }),
@@ -214,13 +218,13 @@ const queries = {
             const toUser = yield User_1.default.findOne({ username: to_username });
             if (!toUser)
                 throw new graphql_1.GraphQLError("User not found");
-            console.log(toUser);
+            //console.log(toUser);
             const conversation = yield DirectMessages_1.default.findOne({ members: { $all: [toUser._id, new bson_1.ObjectId(context.user.id)] } }).populate({
                 path: "members",
                 match: { _id: { $ne: new bson_1.ObjectId(context.user.id) } },
                 select: "name username _id profileImageUrl blue"
             });
-            console.log(conversation);
+            //console.log(conversation);
             if (!conversation) {
                 const formated_sender_details = {
                     conversation_id: null,
@@ -242,11 +246,11 @@ const queries = {
                 to_user_username: (_e = conversation.members[0]) === null || _e === void 0 ? void 0 : _e.username,
                 from_user_id: context.user.id,
             };
-            console.log(formated_sender_details);
+            //console.log(formated_sender_details);
             return formated_sender_details;
         }
         catch (error) {
-            throw new graphql_1.GraphQLError("Something went wrong in userChat");
+            throw new graphql_1.GraphQLError("Something went wrong in specificUserConversationDetails");
         }
     }),
 };

@@ -43,10 +43,8 @@ const cors_1 = __importDefault(require("cors"));
 const http = __importStar(require("http"));
 const JWT_1 = require("./services/JWT");
 const socket_io_1 = require("socket.io");
-const Message_1 = __importDefault(require("./models/Message"));
 const user_1 = require("./services/socketIO/user");
-const DirectMessages_1 = __importDefault(require("./models/DirectMessages"));
-const User_1 = __importDefault(require("./models/User"));
+const messages_1 = require("./services/socketIO/messages");
 require('dotenv').config();
 (0, database_1.default)();
 const authRoutes = require('./routes/authRoute');
@@ -91,35 +89,16 @@ const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {
             socket.join(data);
             console.log("User joined room: " + data);
         });
-        socket.on("create_conversation", (data) => __awaiter(void 0, void 0, void 0, function* () {
-            console.log(data);
-            const fromUser = yield User_1.default.findOne({ username: data.from_user_id });
-            const toUser = yield User_1.default.findOne({ username: data.to_user_username });
-            const arr = [fromUser._id, toUser._id];
-            const newConversation = yield DirectMessages_1.default.create({ members: arr });
-            const obj = {
-                conversation_id: newConversation._id,
-                to_user_id: toUser._id,
-                to_user_display_name: toUser.name,
-                to_user_profile_image: toUser.profileImageUrl,
-                to_user_blue: toUser.blue,
-                to_user_username: toUser.username,
-                from_user_id: fromUser._id,
-            };
-            socket.emit("conversation_created", obj);
-        }));
         socket.on("send_message", (data) => __awaiter(void 0, void 0, void 0, function* () {
             console.log(data);
-            const newMessage = yield Message_1.default.create({ conversationId: data.conversationId, sender: data.senderId, text: data.text, files: data.files === undefined ? [] : data.files });
-            const createdAtString = newMessage.createdAt.toISOString();
-            const formatedMessage = {
-                _id: newMessage._id,
-                sender_id: newMessage.sender,
-                text: newMessage.text === undefined ? null : newMessage.text,
-                files: newMessage.files === undefined || newMessage === null ? [] : newMessage.files,
-                created_at: Date.parse(createdAtString).toString(),
-            };
+            if (data.conversationId === null) {
+                data.conversationId = yield (0, messages_1.checkConversation)(data);
+                socket.emit("conversation_created", data.conversationId);
+            }
+            console.log(data);
+            const formatedMessage = yield (0, messages_1.createMessage)(data);
             socket.to(data.conversationId).emit("receive_message", formatedMessage);
+            console.log("message received triggerred");
         }));
         socket.on("autocomplete_profile_search", (data) => __awaiter(void 0, void 0, void 0, function* () {
             const accounts = yield (0, user_1.autoCompleteUser)(data);

@@ -47,6 +47,80 @@ const mutation = {
     })
 };
 const queries = {
+    fetchAllTweets: (_, p, context) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const tweet_ids = yield Tweet_1.default.find({ in_reply: false }).select("_id").sort({ createdAt: -1 });
+            let response_tweet_array = [];
+            for (const tweet_id of tweet_ids) {
+                console.log(tweet_id);
+                const tweet = yield Tweet_1.default.aggregate([
+                    {
+                        $match: { _id: tweet_id._id }
+                    },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'author_id',
+                            foreignField: '_id',
+                            as: 'author'
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'in_reply_to_user_id',
+                            foreignField: '_id',
+                            as: 'in_reply_to_user_id_field'
+                        }
+                    },
+                    {
+                        $addFields: {
+                            in_reply_to_username: {
+                                $arrayElemAt: ['$in_reply_to_user_id_field.username', 0]
+                            },
+                            author_display_name: {
+                                $arrayElemAt: ['$author.name', 0]
+                            },
+                            author_username: {
+                                $arrayElemAt: ['$author.username', 0]
+                            },
+                            author_profile_image: {
+                                $arrayElemAt: ['$author.profileImageUrl', 0]
+                            },
+                            likeCount: { $size: "$likes" },
+                            isLiked: {
+                                $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$likes"]
+                            },
+                            replyCount: { $size: "$replies" },
+                            retweetCount: { $size: "$retweets" },
+                            isRetweeted: {
+                                $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweets"]
+                            },
+                            quotetweetCount: { $size: "$quotetweets" },
+                        }
+                    },
+                    {
+                        $project: {
+                            author: 0,
+                            in_reply_to_user_id_field: 0
+                        }
+                    },
+                    {
+                        $sort: { createdAt: -1 }
+                    },
+                ]);
+                console.log(tweet);
+                const formated_tweet = (0, tweetSeivices_1.format_tweet_to_respose_format)(tweet[0]);
+                response_tweet_array.push(formated_tweet);
+            }
+            //console.log(response_tweet_array);
+            return response_tweet_array;
+        }
+        catch (error) {
+            console.log(error);
+            throw new graphql_1.GraphQLError(`Something went wrong in fetchTweets ${error}`);
+        }
+    }),
     fetchUserTweets: (_, p, context) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const tweet_ids = yield Tweet_1.default.find({ author_id: context.user.id, in_reply: false }).select("_id").sort({ createdAt: -1 });

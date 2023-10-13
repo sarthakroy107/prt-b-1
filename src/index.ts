@@ -7,10 +7,11 @@ import * as http from 'http';
 import { verifyJWT } from "./services/JWT";
 import { Server } from "socket.io";
 import Message from "./models/Message";
-import { chatObjectTypeDef, chat_sender_TypeDef } from "./config/typeConfig";
+import { chatObjectTypeDef, chat_sender_TypeDef, message_data_type } from "./config/typeConfig";
 import { autoCompleteUser } from "./services/socketIO/user";
 import DirectMessage from "./models/DirectMessages";
 import User from "./models/User";
+import { checkConversation, createMessage } from "./services/socketIO/messages";
 require('dotenv').config()
 
 connect()
@@ -72,38 +73,18 @@ const gqlFunc = async () =>{
       console.log("User joined room: " + data);
     });
 
-    socket.on("create_conversation", async (data) => {
+    socket.on("send_message", async (data: message_data_type) => {
       console.log(data);
-      const fromUser =  await User.findOne({username: data.from_user_id})
-      const toUser = await User.findOne({username: data.to_user_username})
-      const arr: any = [fromUser!._id, toUser!._id]
-      const newConversation = await DirectMessage.create({ members: arr });
-      const obj: chat_sender_TypeDef = {
-        conversation_id:       newConversation._id,
-        to_user_id:            toUser!._id as string,
-        to_user_display_name:  toUser!.name,
-        to_user_profile_image: toUser!.profileImageUrl,
-        to_user_blue:          toUser!.blue,
-        to_user_username:      toUser!.username,
-        from_user_id:          fromUser!._id as string,
+      if(data.conversationId === null) {
+        data.conversationId = await checkConversation(data);
+        socket.emit("conversation_created", data.conversationId);
       }
-      socket.emit("conversation_created", obj)
-    });
-
-    socket.on("send_message", async (data) => {
-      console.log(data);
-      const newMessage = await Message.create({ conversationId: data.conversationId, sender: data.senderId, text: data.text, files: data.files === undefined ? [] : data.files });
-      const createdAtString = newMessage.createdAt.toISOString();
-
-      const formatedMessage: chatObjectTypeDef = {
-        _id:        newMessage._id,
-        sender_id:  newMessage.sender,
-        text:       newMessage.text === undefined ? null : newMessage.text,
-        files:      newMessage.files === undefined || newMessage === null ? [] : newMessage.files,
-        created_at: Date.parse(createdAtString).toString(),
-      }
+      console.log(data)
+      
+      const formatedMessage: chatObjectTypeDef = await createMessage(data);
 
       socket.to(data.conversationId).emit("receive_message", formatedMessage);
+      console.log("message received triggerred")
     });
 
     socket.on("autocomplete_profile_search", async (data)=> {
@@ -112,7 +93,7 @@ const gqlFunc = async () =>{
       socket.emit("autocomplete_profile_search_results", accounts);
     })
 
-    socket.on('disconnect', ()=>{
+    socket.on('disconnect', () => {
       console.log("Socket disconnected")
     });
 
