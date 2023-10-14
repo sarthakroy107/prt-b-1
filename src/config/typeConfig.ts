@@ -83,10 +83,9 @@ export interface responeTypeDef {
   created_at:           Date | string;
   updated_at:           Date | string;
   views_count:          number;
-  is_following?:         boolean;
-  is_bookmarked?:         boolean;
-  bookmark_count?:       number;
-
+  is_following?:        boolean;
+  is_bookmarked?:       boolean;
+  bookmark_count?:      number;
 }
 
 export interface conversationTypeDef {
@@ -110,7 +109,7 @@ export interface chatObjectTypeDef {
   created_at:            Date | string;
 }
 export interface chat_sender_TypeDef {
-  conversation_id:       mongoose.Types.ObjectId | string | null;
+  conversation_id:       mongoose.Types.ObjectId | string | null; //don't touch this
   to_user_id:            mongoose.Types.ObjectId | string;
   to_user_display_name:  string;
   to_user_profile_image: string;
@@ -120,9 +119,9 @@ export interface chat_sender_TypeDef {
 }
 
 export type message_data_type = {
-  text: string | null;
-  files: string[] | null;
-  conversationId: string | null;
-  senderId: string;
-  to_user_id: string;
+  text:           string   | null;
+  files:          string[] | null;
+  conversationId: string   | null;
+  senderId:       string;
+  to_user_id:     string;
 }

@@ -2,8 +2,11 @@ import mongoose from "mongoose";
 import Tweet from "../../models/Tweet";
 import { GraphQLError } from 'graphql';
 import User from "../../models/User";
-import { format_tweet_to_respose_format } from "../../services/tweetSeivices";
-import Follows from "../../models/Follow";
+import { format_tweet_to_respose_format, getTweets } from "../../services/tweetSeivices";
+import { get } from "https";
+import { responeTypeDef } from "../../config/typeConfig";
+import Likes from "../../models/Like";
+import Bookmarks from "../../models/Bookmark";
 
 const mutation = {
   createTweet: async (_: any, { text, files }: { text: string | undefined, files: [string] | undefined }, context: any) => {
@@ -132,6 +135,48 @@ const mutation = {
     console.log(formated_reply)
     
     return formated_reply
+  },
+
+  likeTweet: async (_: any, { tweetId }: { tweetId: string }, context: any) => {
+
+    try {
+      const create_like = await Likes.create({ tweet_id: tweetId, user_id: context.user.id })
+      console.log(create_like)
+      return true
+    } catch (error) {
+      console.log(error)
+      return false
+    }
+  },
+
+  unlikeTweet: async (_: any, { tweetId }: { tweetId: string }, context: any) => {
+    try {
+      await Likes.findOneAndDelete({ tweet_id: tweetId, user_id: context.user.id })
+      return true
+    } catch (error) {
+      console.log(error)
+      return false
+    }
+  },
+
+  bookmarkTweet: async (_: any, { tweetId }: { tweetId: string }, context: any) => {
+    try {
+      const create_bookmark = await Bookmarks.create({ tweet_id: tweetId, user_id: context.user.id })
+      return true
+    } catch (error) {
+      console.log(error)
+      return false
+    }
+  },
+
+  unbookmarkTweet: async (_: any, { tweetId }: { tweetId: string }, context: any) => {
+    try {
+      await Bookmarks.findOneAndDelete({ tweet_id: tweetId, user_id: context.user.id })
+      return true
+    } catch (error) {
+      console.log(error)
+      return false
+    }
   }
 
 }
@@ -146,102 +191,10 @@ const queries = {
 
       for(const tweet_id of tweet_ids) {
         console.log(tweet_id)
-        const tweet = await Tweet.aggregate([
-          {
-            $match: { _id: tweet_id._id }
-          },
-          {
-            $lookup: {
-              from: 'users',
-              localField: 'author_id',
-              foreignField: '_id',
-              as: 'author'
-            }
-          },
-          {
-            $addFields: {
-              in_reply_to_username: {
-                $arrayElemAt: ['$author.username', 0]
-              },
-              author_display_name: {
-                $arrayElemAt: ['$author.name', 0]
-              },
-              author_username: {
-                $arrayElemAt: ['$author.username', 0]
-              },
-              author_profile_image: {
-                $arrayElemAt: ['$author.profileImageUrl', 0]
-              },
-              likeCount: { $size: "$likes" },
-              isLiked: {
-                $in: [new mongoose.Types.ObjectId(context.user.id), "$likes"]
-              },
-              replyCount: { $size: "$replies" },
-              retweetCount: { $size: "$retweets" },
-              isRetweeted: {
-                $in: [new mongoose.Types.ObjectId(context.user.id), "$retweets"]
-              },
-              quotetweetCount: { $size: "$quotetweets" }
-            }
-          },
-          {
-            $project: {
-              author: 0,
-            }
-          },
-          {
-            $lookup: {
-              from: 'follows',
-              let: {
-                author_id: "$author_id",
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $in: [context.user.id, "$members"] },
-                        { $eq: ["$author_id", "$$author_id"] },
-                      ]
-                    }
-                  }
-                }
-              ],
-              as: 'isFollowing'
-            }
-          },
-          {
-            $addFields: {
-              isFollowing: { $cond: { if: { $gt: [{ $size: "$isFollowing" }, 0] }, then: true, else: false } }
-            }
-          },
-          {
-            $lookup: {
-              from: 'bookmarks',
-              localField: '_id',
-              foreignField: 'tweet_id',
-              as: 'bookmarks'
-            }
-          },
-          {
-            $addFields: {
-              isBookmarked: {
-                $in: [new mongoose.Types.ObjectId(context.user.id), "$bookmarks.user_id"]
-              },
-              bookmarkCount: { $size: "$bookmarks" }
-            }
-          },
-          {
-            $sort: { createdAt: -1 }
-          }
-        ]);
-        
+        const tweet = await getTweets(tweet_id._id, context)
         console.log(tweet)
-        const formated_tweet = format_tweet_to_respose_format(tweet[0]);
-        response_tweet_array.push(formated_tweet)
+        response_tweet_array.push(tweet)
       }
-
-      //console.log(response_tweet_array);
 
       return response_tweet_array
 
@@ -260,99 +213,9 @@ const queries = {
 
       for(const tweet_id of tweet_ids) {
         console.log(tweet_id)
-        const tweet = await Tweet.aggregate([
-          {
-            $match: { _id: tweet_id._id }
-          },
-          {
-            $lookup: {
-              from: 'users',
-              localField: 'author_id',
-              foreignField: '_id',
-              as: 'author'
-            }
-          },
-          {
-            $addFields: {
-              in_reply_to_username: {
-                $arrayElemAt: ['$author.username', 0]
-              },
-              author_display_name: {
-                $arrayElemAt: ['$author.name', 0]
-              },
-              author_username: {
-                $arrayElemAt: ['$author.username', 0]
-              },
-              author_profile_image: {
-                $arrayElemAt: ['$author.profileImageUrl', 0]
-              },
-              likeCount: { $size: "$likes" },
-              isLiked: {
-                $in: [new mongoose.Types.ObjectId(context.user.id), "$likes"]
-              },
-              replyCount: { $size: "$replies" },
-              retweetCount: { $size: "$retweets" },
-              isRetweeted: {
-                $in: [new mongoose.Types.ObjectId(context.user.id), "$retweets"]
-              },
-              quotetweetCount: { $size: "$quotetweets" }
-            }
-          },
-          {
-            $project: {
-              author: 0,
-            }
-          },
-          {
-            $lookup: {
-              from: 'follows',
-              let: {
-                author_id: "$author_id",
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $and: [
-                        { $in: [context.user.id, "$members"] },
-                        { $eq: ["$author_id", "$$author_id"] },
-                      ]
-                    }
-                  }
-                }
-              ],
-              as: 'isFollowing'
-            }
-          },
-          {
-            $addFields: {
-              isFollowing: { $cond: { if: { $gt: [{ $size: "$isFollowing" }, 0] }, then: true, else: false } }
-            }
-          },
-          {
-            $lookup: {
-              from: 'bookmarks',
-              localField: '_id',
-              foreignField: 'tweet_id',
-              as: 'bookmarks'
-            }
-          },
-          {
-            $addFields: {
-              isBookmarked: {
-                $in: [new mongoose.Types.ObjectId(context.user.id), "$bookmarks.user_id"]
-              },
-              bookmarkCount: { $size: "$bookmarks" }
-            }
-          },
-          {
-            $sort: { createdAt: -1 }
-          }
-        ]);
+        const tweet = await getTweets(tweet_id._id, context)
         
-        console.log(tweet)
-        const formated_tweet = format_tweet_to_respose_format(tweet[0]);
-        response_tweet_array.push(formated_tweet)
+        response_tweet_array.push(tweet)
       }
 
       console.log(response_tweet_array);
@@ -381,7 +244,7 @@ const queries = {
 
       let arr = [];
       let condition: boolean | undefined = true;
-      let in_reply_to: any = reply_id._id;
+      let in_reply_to: mongoose.Schema.Types.ObjectId | mongoose.Types.ObjectId = reply_id._id;
       let new_reply = false;
 
       while(condition) {
@@ -395,98 +258,7 @@ const queries = {
         }
         else {
 
-          const new_reply_aggregate = await Tweet.aggregate([
-            {
-              $match: { _id: new mongoose.Types.ObjectId(in_reply_to) }
-            },
-            {
-              $lookup: {
-                from: 'users',
-                localField: 'author_id',
-                foreignField: '_id',
-                as: 'author'
-              }
-            },
-            {
-              $addFields: {
-                in_reply_to_username: {
-                  $arrayElemAt: ['$author.username', 0]
-                },
-                author_display_name: {
-                  $arrayElemAt: ['$author.name', 0]
-                },
-                author_username: {
-                  $arrayElemAt: ['$author.username', 0]
-                },
-                author_profile_image: {
-                  $arrayElemAt: ['$author.profileImageUrl', 0]
-                },
-                likeCount: { $size: "$likes" },
-                isLiked: {
-                  $in: [new mongoose.Types.ObjectId(context.user.id), "$likes"]
-                },
-                replyCount: { $size: "$replies" },
-                retweetCount: { $size: "$retweets" },
-                isRetweeted: {
-                  $in: [new mongoose.Types.ObjectId(context.user.id), "$retweets"]
-                },
-                quotetweetCount: { $size: "$quotetweets" }
-              }
-            },
-            {
-              $project: {
-                author: 0,
-              }
-            },
-            {
-              $lookup: {
-                from: 'follows',
-                let: {
-                  author_id: "$author_id",
-                },
-                pipeline: [
-                  {
-                    $match: {
-                      $expr: {
-                        $and: [
-                          { $in: [context.user.id, "$members"] },
-                          { $eq: ["$author_id", "$$author_id"] },
-                        ]
-                      }
-                    }
-                  }
-                ],
-                as: 'isFollowing'
-              }
-            },
-            {
-              $addFields: {
-                isFollowing: { $cond: { if: { $gt: [{ $size: "$isFollowing" }, 0] }, then: true, else: false } }
-              }
-            },
-            {
-              $lookup: {
-                from: 'bookmarks',
-                localField: '_id',
-                foreignField: 'tweet_id',
-                as: 'bookmarks'
-              }
-            },
-            {
-              $addFields: {
-                isBookmarked: {
-                  $in: [new mongoose.Types.ObjectId(context.user.id), "$bookmarks.user_id"]
-                },
-                bookmarkCount: { $size: "$bookmarks" }
-              }
-            },
-            {
-              $sort: { createdAt: -1 }
-            }
-          ]);
-          
-          
-          reply = format_tweet_to_respose_format(new_reply_aggregate[0])
+          reply = await getTweets(in_reply_to, context)
 
           const obj = {
             id: reply?._id,
@@ -516,7 +288,14 @@ const queries = {
     }
     
     return super_array
-  }
+  },
+
+  fetchSpecificTweet: async (_: any, { tweetId }: { tweetId: string }, context: any) => {
+    const tweet_id = new mongoose.Types.ObjectId(tweetId);
+    const tweet: responeTypeDef = await getTweets(tweet_id, context);
+    return tweet
+
+  },
 }
 
 export const TweetResolver = { mutation, queries }

@@ -70,6 +70,9 @@ export const typeDefs = `#graphql
         created_at:           String
         updated_at:           String
         views_count:          Int
+        is_following:         Boolean
+        is_bookmarked:        Boolean
+        bookmark_count:       Int
     }
 
     type Reply {
