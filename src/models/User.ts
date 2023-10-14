@@ -50,12 +50,6 @@ const UserSchema: Schema = new mongoose.Schema<userTypeDef>({
         type: Boolean,
         default: false
     },
-    followers: [{
-        type: mongoose.Schema.Types.ObjectId
-    }],
-    following: [{
-        type: mongoose.Schema.Types.ObjectId
-    }],
     token: {
         type: String,
         default: "dummy_string"

@@ -43,7 +43,98 @@ const mutation = {
             in_reply: true,
             in_reply_to_user_id: repling_to
         });
-        return reply;
+        const newReply = yield Tweet_1.default.aggregate([
+            {
+                $match: { _id: reply._id }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'author_id',
+                    foreignField: '_id',
+                    as: 'author'
+                }
+            },
+            {
+                $addFields: {
+                    in_reply_to_username: {
+                        $arrayElemAt: ['$author.username', 0]
+                    },
+                    author_display_name: {
+                        $arrayElemAt: ['$author.name', 0]
+                    },
+                    author_username: {
+                        $arrayElemAt: ['$author.username', 0]
+                    },
+                    author_profile_image: {
+                        $arrayElemAt: ['$author.profileImageUrl', 0]
+                    },
+                    likeCount: { $size: "$likes" },
+                    isLiked: {
+                        $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$likes"]
+                    },
+                    replyCount: { $size: "$replies" },
+                    retweetCount: { $size: "$retweets" },
+                    isRetweeted: {
+                        $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweets"]
+                    },
+                    quotetweetCount: { $size: "$quotetweets" }
+                }
+            },
+            {
+                $project: {
+                    author: 0,
+                }
+            },
+            {
+                $lookup: {
+                    from: 'follows',
+                    let: {
+                        author_id: "$author_id",
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $in: [context.user.id, "$members"] },
+                                        { $eq: ["$author_id", "$$author_id"] },
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'isFollowing'
+                }
+            },
+            {
+                $addFields: {
+                    isFollowing: { $cond: { if: { $gt: [{ $size: "$isFollowing" }, 0] }, then: true, else: false } }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'bookmarks',
+                    localField: '_id',
+                    foreignField: 'tweet_id',
+                    as: 'bookmarks'
+                }
+            },
+            {
+                $addFields: {
+                    isBookmarked: {
+                        $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$bookmarks.user_id"]
+                    },
+                    bookmarkCount: { $size: "$bookmarks" }
+                }
+            },
+            {
+                $sort: { createdAt: -1 }
+            }
+        ]);
+        const formated_reply = (0, tweetSeivices_1.format_tweet_to_respose_format)(newReply[0]);
+        console.log(formated_reply);
+        return formated_reply;
     })
 };
 const queries = {
@@ -66,17 +157,9 @@ const queries = {
                         }
                     },
                     {
-                        $lookup: {
-                            from: 'users',
-                            localField: 'in_reply_to_user_id',
-                            foreignField: '_id',
-                            as: 'in_reply_to_user_id_field'
-                        }
-                    },
-                    {
                         $addFields: {
                             in_reply_to_username: {
-                                $arrayElemAt: ['$in_reply_to_user_id_field.username', 0]
+                                $arrayElemAt: ['$author.username', 0]
                             },
                             author_display_name: {
                                 $arrayElemAt: ['$author.name', 0]
@@ -96,18 +179,59 @@ const queries = {
                             isRetweeted: {
                                 $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweets"]
                             },
-                            quotetweetCount: { $size: "$quotetweets" },
+                            quotetweetCount: { $size: "$quotetweets" }
                         }
                     },
                     {
                         $project: {
                             author: 0,
-                            in_reply_to_user_id_field: 0
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'follows',
+                            let: {
+                                author_id: "$author_id",
+                            },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $in: [context.user.id, "$members"] },
+                                                { $eq: ["$author_id", "$$author_id"] },
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            as: 'isFollowing'
+                        }
+                    },
+                    {
+                        $addFields: {
+                            isFollowing: { $cond: { if: { $gt: [{ $size: "$isFollowing" }, 0] }, then: true, else: false } }
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'bookmarks',
+                            localField: '_id',
+                            foreignField: 'tweet_id',
+                            as: 'bookmarks'
+                        }
+                    },
+                    {
+                        $addFields: {
+                            isBookmarked: {
+                                $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$bookmarks.user_id"]
+                            },
+                            bookmarkCount: { $size: "$bookmarks" }
                         }
                     },
                     {
                         $sort: { createdAt: -1 }
-                    },
+                    }
                 ]);
                 console.log(tweet);
                 const formated_tweet = (0, tweetSeivices_1.format_tweet_to_respose_format)(tweet[0]);
@@ -126,6 +250,7 @@ const queries = {
             const tweet_ids = yield Tweet_1.default.find({ author_id: context.user.id, in_reply: false }).select("_id").sort({ createdAt: -1 });
             let response_tweet_array = [];
             for (const tweet_id of tweet_ids) {
+                console.log(tweet_id);
                 const tweet = yield Tweet_1.default.aggregate([
                     {
                         $match: { _id: tweet_id._id }
@@ -139,17 +264,9 @@ const queries = {
                         }
                     },
                     {
-                        $lookup: {
-                            from: 'users',
-                            localField: 'in_reply_to_user_id',
-                            foreignField: '_id',
-                            as: 'in_reply_to_user_id_field'
-                        }
-                    },
-                    {
                         $addFields: {
                             in_reply_to_username: {
-                                $arrayElemAt: ['$in_reply_to_user_id_field.username', 0]
+                                $arrayElemAt: ['$author.username', 0]
                             },
                             author_display_name: {
                                 $arrayElemAt: ['$author.name', 0]
@@ -169,18 +286,59 @@ const queries = {
                             isRetweeted: {
                                 $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweets"]
                             },
-                            quotetweetCount: { $size: "$quotetweets" },
+                            quotetweetCount: { $size: "$quotetweets" }
                         }
                     },
                     {
                         $project: {
                             author: 0,
-                            in_reply_to_user_id_field: 0
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'follows',
+                            let: {
+                                author_id: "$author_id",
+                            },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $in: [context.user.id, "$members"] },
+                                                { $eq: ["$author_id", "$$author_id"] },
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            as: 'isFollowing'
+                        }
+                    },
+                    {
+                        $addFields: {
+                            isFollowing: { $cond: { if: { $gt: [{ $size: "$isFollowing" }, 0] }, then: true, else: false } }
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'bookmarks',
+                            localField: '_id',
+                            foreignField: 'tweet_id',
+                            as: 'bookmarks'
+                        }
+                    },
+                    {
+                        $addFields: {
+                            isBookmarked: {
+                                $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$bookmarks.user_id"]
+                            },
+                            bookmarkCount: { $size: "$bookmarks" }
                         }
                     },
                     {
                         $sort: { createdAt: -1 }
-                    },
+                    }
                 ]);
                 console.log(tweet);
                 const formated_tweet = (0, tweetSeivices_1.format_tweet_to_respose_format)(tweet[0]);
@@ -195,7 +353,6 @@ const queries = {
     }),
     fetchUserReplies: (_, p, context) => __awaiter(void 0, void 0, void 0, function* () {
         const reply_ids = yield Tweet_1.default.find({ author_id: context.user.id, in_reply: true }).select("_id").sort({ createdAt: -1 });
-        //console.log("Reply ids: ",reply_ids)
         let memorization_array = [];
         let i = 0, j = 0;
         let super_array = [];
@@ -229,17 +386,9 @@ const queries = {
                             }
                         },
                         {
-                            $lookup: {
-                                from: 'users',
-                                localField: 'in_reply_to_user_id',
-                                foreignField: '_id',
-                                as: 'in_reply_to_user_id_field'
-                            }
-                        },
-                        {
                             $addFields: {
                                 in_reply_to_username: {
-                                    $arrayElemAt: ['$in_reply_to_user_id_field.username', 0]
+                                    $arrayElemAt: ['$author.username', 0]
                                 },
                                 author_display_name: {
                                     $arrayElemAt: ['$author.name', 0]
@@ -259,18 +408,59 @@ const queries = {
                                 isRetweeted: {
                                     $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweets"]
                                 },
-                                quotetweetCount: { $size: "$quotetweets" },
+                                quotetweetCount: { $size: "$quotetweets" }
                             }
                         },
                         {
                             $project: {
                                 author: 0,
-                                in_reply_to_user_id_field: 0
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'follows',
+                                let: {
+                                    author_id: "$author_id",
+                                },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $in: [context.user.id, "$members"] },
+                                                    { $eq: ["$author_id", "$$author_id"] },
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'isFollowing'
+                            }
+                        },
+                        {
+                            $addFields: {
+                                isFollowing: { $cond: { if: { $gt: [{ $size: "$isFollowing" }, 0] }, then: true, else: false } }
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'bookmarks',
+                                localField: '_id',
+                                foreignField: 'tweet_id',
+                                as: 'bookmarks'
+                            }
+                        },
+                        {
+                            $addFields: {
+                                isBookmarked: {
+                                    $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$bookmarks.user_id"]
+                                },
+                                bookmarkCount: { $size: "$bookmarks" }
                             }
                         },
                         {
                             $sort: { createdAt: -1 }
-                        },
+                        }
                     ]);
                     reply = (0, tweetSeivices_1.format_tweet_to_respose_format)(new_reply_aggregate[0]);
                     const obj = {
