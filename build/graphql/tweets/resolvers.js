@@ -267,5 +267,11 @@ const queries = {
         const tweet = yield (0, tweetSeivices_1.getTweets)(tweet_id, context);
         return tweet;
     }),
+    fetchRepliesForSpecifivTweet: (_, { tweetId, offset }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(tweetId, offset);
+        const replies = yield (0, tweetSeivices_1.getReplies)(new mongoose_1.default.Types.ObjectId(tweetId), context);
+        console.log(replies);
+        return replies;
+    }),
 };
 exports.TweetResolver = { mutation, queries };

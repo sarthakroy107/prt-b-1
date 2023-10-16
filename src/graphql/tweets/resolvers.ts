@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 import Tweet from "../../models/Tweet";
 import { GraphQLError } from 'graphql';
 import User from "../../models/User";
-import { format_tweet_to_respose_format, getTweets } from "../../services/tweetSeivices";
+import { format_tweet_to_respose_format, getReplies, getTweets } from "../../services/tweetSeivices";
 import { get } from "https";
-import { responeTypeDef } from "../../config/typeConfig";
+import { chatObjectTypeDef, responeTypeDef } from "../../config/typeConfig";
 import Likes from "../../models/Like";
 import Bookmarks from "../../models/Bookmark";
 
@@ -178,7 +178,6 @@ const mutation = {
       return false
     }
   }
-
 }
 
 const queries = {
@@ -289,12 +288,18 @@ const queries = {
     
     return super_array
   },
-
+  
   fetchSpecificTweet: async (_: any, { tweetId }: { tweetId: string }, context: any) => {
     const tweet_id = new mongoose.Types.ObjectId(tweetId);
     const tweet: responeTypeDef = await getTweets(tweet_id, context);
     return tweet
+  },
 
+  fetchRepliesForSpecifivTweet: async (_: any, { tweetId, offset }: { tweetId: string, offset: string }, context: any) => {
+    console.log( tweetId, offset )
+    const replies: responeTypeDef[][] = await getReplies(new mongoose.Types.ObjectId(tweetId), context);
+    console.log(replies)
+    return replies;
   },
 }
 

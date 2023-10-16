@@ -6,4 +6,6 @@ exports.Queries = `#graphql
     fetchUserReplies: [[TweetCard]]
     fetchAllTweets: [TweetCard]
     fetchSpecificTweet(tweetId: String!): TweetCard!
+    fetchRepliesForSpecifivTweet(tweetId: String!, offset: Int!): [[TweetCard]]
+
 `;
