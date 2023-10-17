@@ -56,8 +56,6 @@ const mutation = {
     })
 };
 const queries = {
-    hello: () => "Hello",
-    say: (_, { name }) => `Name is ${name}`,
     fetchUsers: () => __awaiter(void 0, void 0, void 0, function* () {
         const users = yield User_1.default.find({});
         console.log(users);
@@ -252,6 +250,55 @@ const queries = {
         catch (error) {
             throw new graphql_1.GraphQLError("Something went wrong in specificUserConversationDetails");
         }
+    }),
+    extraUserDetails: (_, { username }) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(username);
+        const user = yield User_1.default.aggregate([
+            {
+                $match: { username }
+            },
+            {
+                $addFields: {
+                    user_bio: "$bio"
+                }
+            },
+            {
+                $lookup: {
+                    from: 'follows',
+                    localField: '_id',
+                    foreignField: 'following',
+                    as: 'following'
+                },
+            },
+            {
+                $addFields: {
+                    followingCount: { $size: "$following" }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'follows',
+                    localField: '_id',
+                    foreignField: 'follower',
+                    as: 'followers'
+                }
+            },
+            {
+                $addFields: {
+                    followersCount: { $size: "$followers" }
+                }
+            },
+            {
+                $project: {
+                    bio: 1,
+                    followingCount: 1,
+                    followersCount: 1,
+                    _id: 0
+                }
+            }
+        ]);
+        console.log(user[0]);
+        return user[0];
     }),
 };
 exports.UserResolvers = { mutation, queries };

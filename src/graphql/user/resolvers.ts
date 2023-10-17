@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken")
 import { GraphQLError } from 'graphql';
 import { format_conversation_details, formated_chats } from "../../services/chatServices";
 import { chatObjectTypeDef, chat_sender_TypeDef, conversationTypeDef } from "../../config/typeConfig";
+import mongoose from "mongoose";
 require('dotenv').config()
 
 const mutation = {
@@ -51,9 +52,6 @@ const mutation = {
 }
 
 const queries = {
-    hello: () => "Hello",
-
-    say: (_: any, { name }: { name: string }) => `Name is ${name}`,
 
     fetchUsers: async () => {
         const users = await User.find({});
@@ -98,7 +96,6 @@ const queries = {
             throw new GraphQLError("Something went wrong in fetchUserDetailsWithEmail")
         }
     },
-
 
     fetchUserDetailsWithUsername: async (_: any, { username }: { username: string }) => {
 
@@ -277,6 +274,57 @@ const queries = {
         } catch (error) {
             throw new GraphQLError("Something went wrong in specificUserConversationDetails");
         }
+    },
+
+    extraUserDetails: async (_: any, { username }: { username: string }) => {
+        console.log(username)
+        const user = await User.aggregate([
+            {
+                $match: { username }
+            },
+            {
+                $addFields: {
+                    user_bio: "$bio"
+                }
+            },
+            {
+                $lookup: {
+                    from: 'follows',
+                    localField: '_id',
+                    foreignField: 'following',
+                    as: 'following'
+                },
+            },
+            {
+                $addFields: {
+                    followingCount: { $size: "$following" }
+
+                }
+            },
+            {
+                $lookup: {
+                    from: 'follows', 
+                    localField: '_id',
+                    foreignField: 'follower',
+                    as: 'followers'
+                }
+            },
+            {
+                $addFields: {
+                    followersCount: { $size: "$followers" }
+                }
+            },
+            {
+                $project: {
+                    bio: 1,
+                    followingCount: 1,
+                    followersCount: 1,
+                    _id: 0
+                }
+            }
+        ]);
+        console.log(user[0]);
+        return user[0];
     },
 }
 

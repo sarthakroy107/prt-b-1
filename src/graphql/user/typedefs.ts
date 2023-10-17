@@ -124,5 +124,11 @@ export const typeDefs = `#graphql
         to_user_blue:          Boolean
         to_user_username:      String
         from_user_id:          String
+    },
+
+    type UserExtraDetails {
+        bio: String
+        followersCount: Int!
+        followingCount: Int!
     }
 `
