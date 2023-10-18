@@ -1,9 +1,7 @@
 import { ApolloServer } from "@apollo/server";
 import { User } from "./user";
-import { PrismaClient } from '@prisma/client'
 import { Auth } from "./auth";
 import { Tweet } from "./tweets";
-const prisma = new PrismaClient()
 
 async function createApolloGraphqlServer() {
     const gqlServer = new ApolloServer({

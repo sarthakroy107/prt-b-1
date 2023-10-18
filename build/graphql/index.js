@@ -11,10 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const server_1 = require("@apollo/server");
 const user_1 = require("./user");
-const client_1 = require("@prisma/client");
 const auth_1 = require("./auth");
 const tweets_1 = require("./tweets");
-const prisma = new client_1.PrismaClient();
 function createApolloGraphqlServer() {
     return __awaiter(this, void 0, void 0, function* () {
         const gqlServer = new server_1.ApolloServer({
