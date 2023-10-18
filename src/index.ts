@@ -6,11 +6,8 @@ import cors from 'cors';
 import * as http from 'http';
 import { verifyJWT } from "./services/JWT";
 import { Server } from "socket.io";
-import Message from "./models/Message";
 import { chatObjectTypeDef, chat_sender_TypeDef, message_data_type } from "./config/typeConfig";
 import { autoCompleteUser } from "./services/socketIO/user";
-import DirectMessage from "./models/DirectMessages";
-import User from "./models/User";
 import { checkConversation, createMessage } from "./services/socketIO/messages";
 require('dotenv').config()
 
