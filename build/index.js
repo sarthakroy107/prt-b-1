@@ -45,6 +45,7 @@ const JWT_1 = require("./services/JWT");
 const socket_io_1 = require("socket.io");
 const user_1 = require("./services/socketIO/user");
 const messages_1 = require("./services/socketIO/messages");
+const userInteractions_1 = require("./controllers/userInteractions");
 require('dotenv').config();
 (0, database_1.default)();
 const authRoutes = require('./routes/authRoute');
@@ -57,6 +58,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
+app.post('/api/v1/bluewebhook', express_1.default.raw({ type: 'application/json' }), userInteractions_1.bluewebhook);
 app.use(express_1.default.json());
 const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {
     app.use("/graphql", (0, express4_1.expressMiddleware)(yield (0, graphql_1.default)(), {

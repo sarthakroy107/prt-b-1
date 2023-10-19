@@ -9,6 +9,7 @@ import { Server } from "socket.io";
 import { chatObjectTypeDef, chat_sender_TypeDef, message_data_type } from "./config/typeConfig";
 import { autoCompleteUser } from "./services/socketIO/user";
 import { checkConversation, createMessage } from "./services/socketIO/messages";
+import { bluewebhook } from "./controllers/userInteractions";
 require('dotenv').config()
 
 connect()
@@ -19,12 +20,20 @@ const userRoutes = require('./routes/UserRoutes')
 const app: Express = express();
 
 app.use(cors());
+
+
+
 app.use((req, res, next) => {
-	res.setHeader('Access-Control-Allow-Origin', '*');
+  
+  res.setHeader('Access-Control-Allow-Origin', '*');
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
 	res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
 	next();
-  });
+});
+
+app.post('/api/v1/bluewebhook', express.raw({type: 'application/json'}), bluewebhook)
+
 app.use(express.json());
 
 const gqlFunc = async () =>{

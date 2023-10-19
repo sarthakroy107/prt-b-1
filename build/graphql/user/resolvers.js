@@ -22,6 +22,10 @@ const jwt = require("jsonwebtoken");
 const graphql_1 = require("graphql");
 const chatServices_1 = require("../../services/chatServices");
 require('dotenv').config();
+const stripe_1 = __importDefault(require("stripe"));
+const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2023-10-16',
+});
 const mutation = {
     createUser: (_, { name, email, password, username }) => __awaiter(void 0, void 0, void 0, function* () {
         try {

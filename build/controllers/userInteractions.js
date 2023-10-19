@@ -12,9 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unlikeTweets = exports.likeTweets = void 0;
+exports.bluewebhook = exports.payment = exports.unlikeTweets = exports.likeTweets = void 0;
 const User_1 = __importDefault(require("../models/User"));
 const Tweet_1 = __importDefault(require("../models/Tweet"));
+const stripe_1 = __importDefault(require("stripe"));
+require('dotenv').config();
+const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2023-10-16',
+});
 const likeTweets = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { tweetId } = req.body;
@@ -103,3 +108,56 @@ const unlikeTweets = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.unlikeTweets = unlikeTweets;
+const payment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { username } = req.body;
+        console.log("Hello from payment");
+        console.log(username);
+        const session = yield stripe.checkout.sessions.create({
+            line_items: [
+                {
+                    price: process.env.STRIPE_PRICEID,
+                    quantity: 1,
+                }
+            ],
+            metadata: {
+                username: username,
+            },
+            mode: 'payment',
+            success_url: 'http://localhost:3000/home',
+            cancel_url: 'http://localhost:3000/home'
+        });
+        res.json({ url: session.url });
+    }
+    catch (error) {
+        console.log(error);
+    }
+});
+exports.payment = payment;
+const bluewebhook = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    console.log("Payment was webhook");
+    const sig = req.headers['stripe-signature'];
+    let event;
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    }
+    catch (error) {
+        console.log(error);
+    }
+    if ((event === null || event === void 0 ? void 0 : event.type) === "checkout.session.completed") {
+        //@ts-ignore
+        const username = (_c = (_b = (_a = event === null || event === void 0 ? void 0 : event.data) === null || _a === void 0 ? void 0 : _a.object) === null || _b === void 0 ? void 0 : _b.metadata) === null || _c === void 0 ? void 0 : _c.username;
+        if (!username)
+            return res.sendStatus(400);
+        const user = yield User_1.default.findOne({ username });
+        if (!user)
+            return res.sendStatus(400);
+        console.log(user);
+        user.blue = true;
+        yield user.save();
+        return res.sendStatus(200);
+    }
+    return res.send(200);
+});
+exports.bluewebhook = bluewebhook;

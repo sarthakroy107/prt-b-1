@@ -9,6 +9,11 @@ import { format_conversation_details, formated_chats } from "../../services/chat
 import { chatObjectTypeDef, chat_sender_TypeDef, conversationTypeDef } from "../../config/typeConfig";
 import mongoose from "mongoose";
 require('dotenv').config()
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2023-10-16',
+  });
 
 const mutation = {
     createUser: async (_: any, { name, email, password, username }: { name: string, email: string, password: string, username: string }) => {

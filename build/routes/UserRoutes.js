@@ -9,4 +9,5 @@ const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
 router.put("/like-tweet", auth_1.auth, userInteractions_1.likeTweets);
 router.put('/unlike-tweet', auth_1.auth, userInteractions_1.unlikeTweets);
+router.post('/payment', userInteractions_1.payment);
 module.exports = router;
