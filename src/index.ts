@@ -94,7 +94,7 @@ const gqlFunc = async () =>{
     });
 
     socket.on("autocomplete_profile_search", async (data)=> {
-      const accounts = await autoCompleteUser(data);
+      const accounts = await autoCompleteUser(data.searchString);
       console.log(accounts)
       socket.emit("autocomplete_profile_search_results", accounts);
     })

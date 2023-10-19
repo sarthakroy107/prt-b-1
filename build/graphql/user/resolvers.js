@@ -13,19 +13,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResolvers = void 0;
-const bson_1 = require("bson");
 const DirectMessages_1 = __importDefault(require("../../models/DirectMessages"));
 const Message_1 = __importDefault(require("../../models/Message"));
 const User_1 = __importDefault(require("../../models/User"));
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
+const bson_1 = require("bson");
 const graphql_1 = require("graphql");
 const chatServices_1 = require("../../services/chatServices");
+const user_1 = require("../../services/socketIO/user");
 require('dotenv').config();
-const stripe_1 = __importDefault(require("stripe"));
-const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2023-10-16',
-});
 const mutation = {
     createUser: (_, { name, email, password, username }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
@@ -304,5 +301,31 @@ const queries = {
         console.log(user[0]);
         return user[0];
     }),
+    latestJoinedUser: () => __awaiter(void 0, void 0, void 0, function* () {
+        const latest_user = yield User_1.default.find({}).sort({ createdAt: -1 }).limit(1);
+        const latest_blue_user = yield User_1.default.find({ blue: true }).sort({ createdAt: -1 }).limit(1);
+        const user_object = {
+            latest_user_dispalyname: latest_user[0].name,
+            latest_user_username: latest_user[0].username,
+            latest_user_profile_image: latest_user[0].profileImageUrl,
+            latest_user_blue: latest_user[0].blue,
+            latest_blue_user_dispalyname: latest_blue_user[0].name,
+            latest_blue_user_username: latest_blue_user[0].username,
+            latest_blue_user_profile_image: latest_blue_user[0].profileImageUrl,
+            latest_blue_user_blue: latest_blue_user[0].blue,
+        };
+        return user_object;
+    }),
+    autoCompleteUser: (_, { searchString }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const users = yield (0, user_1.autoCompleteUser)(searchString);
+            console.log(users);
+            return users;
+        }
+        catch (error) {
+            console.log("Error in autoCompleteUser", error);
+            return [];
+        }
+    })
 };
 exports.UserResolvers = { mutation, queries };

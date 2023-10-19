@@ -1,19 +1,14 @@
-import { ObjectId } from "bson";
 import DirectMessage from "../../models/DirectMessages";
 import Message from "../../models/Message";
 import User from "../../models/User";
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken")
+import { ObjectId } from "bson";
 import { GraphQLError } from 'graphql';
 import { format_conversation_details, formated_chats } from "../../services/chatServices";
-import { chatObjectTypeDef, chat_sender_TypeDef, conversationTypeDef } from "../../config/typeConfig";
-import mongoose from "mongoose";
+import { chatObjectTypeDef, chat_sender_TypeDef, conversationTypeDef, userTypeDef } from "../../config/typeConfig";
+import { autoCompleteUser } from "../../services/socketIO/user";
 require('dotenv').config()
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2023-10-16',
-  });
 
 const mutation = {
     createUser: async (_: any, { name, email, password, username }: { name: string, email: string, password: string, username: string }) => {
@@ -331,6 +326,34 @@ const queries = {
         console.log(user[0]);
         return user[0];
     },
+
+    latestJoinedUser: async () =>{
+        const latest_user: userTypeDef[] | null = await User.find({}).sort({ createdAt: -1 }).limit(1);
+        const latest_blue_user: userTypeDef[] | null = await User.find({ blue: true }).sort({ createdAt: -1}).limit(1);
+        const user_object = {
+            latest_user_dispalyname:        latest_user[0].name,
+            latest_user_username:           latest_user[0].username,
+            latest_user_profile_image:      latest_user[0].profileImageUrl,
+            latest_user_blue:               latest_user[0].blue,
+            latest_blue_user_dispalyname:   latest_blue_user[0].name,
+            latest_blue_user_username:      latest_blue_user[0].username,
+            latest_blue_user_profile_image: latest_blue_user[0].profileImageUrl,
+            latest_blue_user_blue:          latest_blue_user[0].blue,
+        }
+        return user_object;
+    },
+
+    autoCompleteUser: async (_:any, {searchString}: {searchString: string}, context: any) => {
+        try {
+            const users = await autoCompleteUser(searchString);
+            console.log(users)
+            return users;
+            
+        } catch (error) {
+            console.log("Error in autoCompleteUser", error);
+            return [];
+        }
+    }
 }
 
 export const UserResolvers = { mutation, queries }

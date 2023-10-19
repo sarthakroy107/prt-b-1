@@ -2,15 +2,12 @@ import User from "../../models/User"
 
 export const autoCompleteUser = async (searchString: string) => {
     try {
-        //@ts-ignore
-        console.log(searchString.searchString)
         const users = await User.aggregate([
             {
                 $search: {
                     index: "default",
                     text: {
-                        // @ts-ignore
-                        query: searchString.searchString, 
+                        query: searchString, 
                         path: ["username", "name"],
                         fuzzy: {
                             maxEdits: 2,
@@ -18,30 +15,6 @@ export const autoCompleteUser = async (searchString: string) => {
                         },
                     }
                 }
-            },
-            {
-                $lookup: {
-                    from: "users", // Assuming your collection name is "users"
-                    localField: "following",
-                    foreignField: "_id",
-                    as: "followedUsers"
-                }
-            },
-            {
-                $addFields: {
-                    isFollowedByYou: {
-                        $in: ["$_id", "$followedUsers._id"]
-                    }
-                }
-            },
-            {
-                $sort: {
-                    isFollowedByYou: -1, // Sort in descending order so that followed users come first
-                    // Add other sorting criteria here if needed
-                }
-            },
-            {
-                $limit: 5
             },
             {
                 $project: {

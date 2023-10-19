@@ -131,4 +131,22 @@ export const typeDefs = `#graphql
         followersCount: Int!
         followingCount: Int!
     }
+    type latestJoinedUserType {
+        latest_user_dispalyname: String
+        latest_user_username: String
+        latest_user_profile_image: String
+        latest_user_blue: String
+        latest_blue_user_dispalyname: String
+        latest_blue_user_username: String
+        latest_blue_user_profile_image: String
+        latest_blue_user_blue: String
+    }
+
+    type basicUserDetails {
+        _id: String!
+        name: String!
+        username: String!
+        profileImageUrl: String!
+        blue: Boolean!
+    }
 `

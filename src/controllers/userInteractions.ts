@@ -69,7 +69,6 @@ export const likeTweets = async (req: Request, res: Response) => {
     }
 }
 
-
 export const unlikeTweets = async (req: Request, res: Response) => {
     try {
         const { tweetId }: { tweetId: mongoose.Schema.Types.ObjectId | string } = req.body;

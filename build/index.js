@@ -103,7 +103,7 @@ const gqlFunc = () => __awaiter(void 0, void 0, void 0, function* () {
             console.log("message received triggerred");
         }));
         socket.on("autocomplete_profile_search", (data) => __awaiter(void 0, void 0, void 0, function* () {
-            const accounts = yield (0, user_1.autoCompleteUser)(data);
+            const accounts = yield (0, user_1.autoCompleteUser)(data.searchString);
             console.log(accounts);
             socket.emit("autocomplete_profile_search_results", accounts);
         }));

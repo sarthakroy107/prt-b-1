@@ -10,4 +10,6 @@ export const Queries = `#graphql
     specificUserConversationDetails(to_username: String!): Conversation_User_Details
     searchUser(searchString: String!): Boolean!
     extraUserDetails(username: String!): UserExtraDetails!
+    latestJoinedUser: latestJoinedUserType!
+    autoCompleteUser(searchString: String!): [basicUserDetails]!
 `
