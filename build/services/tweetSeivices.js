@@ -41,6 +41,7 @@ const format_tweet_to_respose_format = (tweet) => {
         is_following: tweet.isFollowing,
         is_bookmarked: tweet.isBookmarked,
         bookmark_count: tweet.bookmarkCount,
+        is_blue: tweet.is_blue
     };
     console.log(response_obj);
     return response_obj;
@@ -277,7 +278,10 @@ const getTweets = (tweet_id, context) => __awaiter(void 0, void 0, void 0, funct
                 isRetweeted: {
                     $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweets"]
                 },
-                quotetweetCount: { $size: "$quotetweets" }
+                quotetweetCount: { $size: "$quotetweets" },
+                is_blue: {
+                    $arrayElemAt: ['$author.blue', 0]
+                },
             }
         },
         {

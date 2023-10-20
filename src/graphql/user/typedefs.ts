@@ -73,6 +73,7 @@ export const typeDefs = `#graphql
         is_following:         Boolean
         is_bookmarked:        Boolean
         bookmark_count:       Int
+        is_blue:              Boolean
     }
 
     type Reply {

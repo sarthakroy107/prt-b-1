@@ -86,6 +86,7 @@ export interface responeTypeDef {
   is_following?:        boolean;
   is_bookmarked?:       boolean;
   bookmark_count?:      number;
+  is_blue:              boolean;
 }
 
 export interface conversationTypeDef {

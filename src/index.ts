@@ -6,7 +6,7 @@ import cors from 'cors';
 import * as http from 'http';
 import { verifyJWT } from "./services/JWT";
 import { Server } from "socket.io";
-import { chatObjectTypeDef, chat_sender_TypeDef, message_data_type } from "./config/typeConfig";
+import { chatObjectTypeDef, message_data_type } from "./config/typeConfig";
 import { autoCompleteUser } from "./services/socketIO/user";
 import { checkConversation, createMessage } from "./services/socketIO/messages";
 import { bluewebhook } from "./controllers/userInteractions";
@@ -101,7 +101,7 @@ const gqlFunc = async () =>{
 
     socket.on('disconnect', () => {
       console.log("Socket disconnected")
-    });
+    })
 
   })
 
