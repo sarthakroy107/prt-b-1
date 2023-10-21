@@ -153,4 +153,20 @@ exports.typeDefs = `#graphql
         profileImageUrl: String!
         blue: Boolean!
     }
+
+    type fullUserDetails {
+        id:              String!
+        name:            String!
+        email:           String!
+        username:        String!
+        profile_image:   String!
+        banner:          String!
+        blue:            Boolean!
+        bio:             String
+        tweet_count:     Int
+        reply_count:     Int
+        follower_count:  Int
+        following_count: Int
+        createdAt:       String
+    }
 `;

@@ -1,8 +1,8 @@
 
 export const Queries = `#graphql
     fetchUsers: [User]
-    fetchUserDetailsWithEmail(email: String!): User
-    fetchUserDetailsWithUsername(username: String!): User
+    fetchUserDetailsWithEmail(email: String!): fullUserDetails
+    fetchUserDetailsWithUsername(username: String!): fullUserDetails
     fetchUserWithEmail(email: String!, password: String!): User
     userLogin(email: String!, password:String!): User
     userChats: [ConversationDetails]!

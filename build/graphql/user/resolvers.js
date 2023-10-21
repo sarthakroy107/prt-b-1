@@ -22,6 +22,7 @@ const bson_1 = require("bson");
 const graphql_1 = require("graphql");
 const chatServices_1 = require("../../services/chatServices");
 const user_1 = require("../../services/socketIO/user");
+const userServices_1 = require("../../services/userServices");
 require('dotenv').config();
 const mutation = {
     createUser: (_, { name, email, password, username }) => __awaiter(void 0, void 0, void 0, function* () {
@@ -64,62 +65,20 @@ const queries = {
     }),
     fetchUserDetailsWithEmail: (_, { email }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const uSer = yield User_1.default.aggregate([
-                {
-                    $match: { email }
-                },
-                {
-                    $lookup: {
-                        from: 'tweets',
-                        localField: '_id',
-                        foreignField: 'author_id',
-                        as: 'tweets'
-                    }
-                },
-                {
-                    $addFields: {
-                        tweetCount: { $size: "$tweets" },
-                        followersCount: { $size: "$followers" },
-                        followingCount: { $size: "$following" }
-                    }
-                },
-                {
-                    $limit: 1
-                }
-            ]);
-            //console.log("uSer: ")
-            //console.log(uSer[0])
-            return uSer[0];
+            const user = yield (0, userServices_1.getUser)(null, email);
+            return user;
         }
-        catch (err) {
-            console.log(err);
-            throw new graphql_1.GraphQLError("Something went wrong in fetchUserDetailsWithEmail");
+        catch (error) {
+            console.log(error);
         }
     }),
     fetchUserDetailsWithUsername: (_, { username }) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const uSer = yield User_1.default.aggregate([
-                {
-                    $match: { username }
-                },
-                {
-                    $addFields: {
-                        tweetCount: { $size: "$tweets" },
-                        followersCount: { $size: "$followers" },
-                        followingCount: { $size: "$following" }
-                    }
-                }
-            ]);
-            //console.log(uSer)
-            const user = yield User_1.default.findOne({ username });
-            if (!user)
-                throw new graphql_1.GraphQLError(`User with email: ${username} does not exists`);
-            //console.log(user);
-            const extendedUser = Object.assign(Object.assign({}, user._doc), { tweetCount: user.tweets.length, followersCount: user.followers.length, followingCount: user.following.length });
-            return extendedUser;
+            const user = yield (0, userServices_1.getUser)(username, null);
+            return user;
         }
-        catch (err) {
-            throw new graphql_1.GraphQLError("Something went wrong in fetchUserDetailsWithEmail");
+        catch (error) {
+            console.log(error);
         }
     }),
     fetchUserWithEmail: (_, { email, password }) => __awaiter(void 0, void 0, void 0, function* () {
@@ -318,14 +277,15 @@ const queries = {
     }),
     autoCompleteUser: (_, { searchString }, context) => __awaiter(void 0, void 0, void 0, function* () {
         try {
+            if (searchString.length < 1)
+                return [];
             const users = yield (0, user_1.autoCompleteUser)(searchString);
-            console.log(users);
             return users;
         }
         catch (error) {
             console.log("Error in autoCompleteUser", error);
             return [];
         }
-    })
+    }),
 };
 exports.UserResolvers = { mutation, queries };

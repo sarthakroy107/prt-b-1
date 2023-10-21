@@ -22,6 +22,21 @@ export interface tweetTypeDef {
   updatedAt:            Date | string;
 }
 
+export type userType = {
+  id:                   mongoose.Schema.Types.ObjectId | string
+  name:                 string
+  email:                string
+  username:             string
+  profile_image:        string
+  banner:               string
+  blue:                 boolean
+  bio:                  string | null
+  tweet_count:          number | null
+  reply_count:          number | null
+  follower_count:       number | null
+  following_count:      number | null
+  createdAt:            Date | string
+}
 export interface userTypeDef {
   _id: mongoose.Schema.Types.ObjectId | string
   name: string

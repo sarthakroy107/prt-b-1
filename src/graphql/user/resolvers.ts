@@ -8,6 +8,7 @@ import { GraphQLError } from 'graphql';
 import { format_conversation_details, formated_chats } from "../../services/chatServices";
 import { chatObjectTypeDef, chat_sender_TypeDef, conversationTypeDef, userTypeDef } from "../../config/typeConfig";
 import { autoCompleteUser } from "../../services/socketIO/user";
+import { getUser } from "../../services/userServices";
 require('dotenv').config()
 
 const mutation = {
@@ -60,76 +61,20 @@ const queries = {
     },
 
     fetchUserDetailsWithEmail: async (_: any, { email }: { email: string }) => {
-
         try {
-
-            const uSer = await User.aggregate([
-                {
-                    $match: { email }
-                },
-                {
-                    $lookup: {
-                      from: 'tweets', // Replace with the name of your tweets collection
-                      localField: '_id',
-                      foreignField: 'author_id',
-                      as: 'tweets'
-                    }
-                  },
-                {
-                    $addFields: {
-                        tweetCount: { $size: "$tweets" },
-                        followersCount: { $size: "$followers" },
-                        followingCount: { $size: "$following" }
-                    }
-                },
-                {
-                    $limit: 1
-                }
-            ])
-            //console.log("uSer: ")
-            //console.log(uSer[0])
-
-            return uSer[0]
-        }
-        catch (err) {
-            console.log(err)
-            throw new GraphQLError("Something went wrong in fetchUserDetailsWithEmail")
+            const user = await getUser(null, email);
+            return user;
+        } catch (error) {
+            console.log(error)
         }
     },
 
     fetchUserDetailsWithUsername: async (_: any, { username }: { username: string }) => {
-
         try {
-
-            const uSer = await User.aggregate([
-                {
-                    $match: { username }
-                },
-                {
-                    $addFields: {
-                        tweetCount: { $size: "$tweets" },
-                        followersCount: { $size: "$followers" },
-                        followingCount: { $size: "$following" }
-                    }
-                }
-            ])
-            //console.log(uSer)
-
-            const user = await User.findOne({ username });
-            if (!user) throw new GraphQLError(`User with email: ${username} does not exists`);
-            //console.log(user);
-            const extendedUser = {
-                //@ts-ignore
-                ...user._doc,
-                tweetCount: user.tweets.length,
-                followersCount: user.followers.length,
-                followingCount: user.following.length,
-            }
-
-            return extendedUser;
-        }
-        catch (err) {
-            throw new GraphQLError("Something went wrong in fetchUserDetailsWithEmail")
+            const user = await getUser(username, null);
+            return user;
+        } catch (error) {
+            console.log(error)
         }
     },
 
@@ -345,15 +290,15 @@ const queries = {
 
     autoCompleteUser: async (_:any, {searchString}: {searchString: string}, context: any) => {
         try {
+            if(searchString.length < 1) return [];
             const users = await autoCompleteUser(searchString);
-            console.log(users)
             return users;
             
         } catch (error) {
             console.log("Error in autoCompleteUser", error);
             return [];
         }
-    }
+    },
 }
 
 export const UserResolvers = { mutation, queries }
