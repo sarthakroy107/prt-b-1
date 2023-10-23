@@ -44,7 +44,7 @@ const mutation = {
             }
             const message = await Message.create({ conversationId: coversation._id, sender: context.user.id, text, files });
 
-            return true;
+            return true
         } catch(error) {
         throw new GraphQLError("Something went wrong in sendMessage");
     }
