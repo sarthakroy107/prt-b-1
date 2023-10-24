@@ -37,12 +37,12 @@ const mutation = {
 
     sendMessage: async (_: any, { receiverId, text, files }: { conversationId: string, receiverId: string, text: string, files: string[] }, context: any) => {
         try {
-            let coversation: any = await DirectMessage.findOne({ members: { $all: [receiverId, context.user.id] } });
+            let coversation: any = await DirectMessage.findOne({ members: { $all: [receiverId, context.user.id] } })
 
             if (!coversation) {
                 coversation = await DirectMessage.create({ members: [receiverId, context.user.id] })
             }
-            const message = await Message.create({ conversationId: coversation._id, sender: context.user.id, text, files });
+            const message = await Message.create({ conversationId: coversation._id, sender: context.user.id, text, files })
 
             return true
         } catch(error) {
