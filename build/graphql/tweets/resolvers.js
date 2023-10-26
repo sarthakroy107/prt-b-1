@@ -16,16 +16,29 @@ exports.TweetResolver = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const Tweet_1 = __importDefault(require("../../models/Tweet"));
 const graphql_1 = require("graphql");
-const User_1 = __importDefault(require("../../models/User"));
 const tweetSeivices_1 = require("../../services/tweetSeivices");
 const Like_1 = __importDefault(require("../../models/Like"));
 const Bookmark_1 = __importDefault(require("../../models/Bookmark"));
 const mutation = {
-    createTweet: (_, { text, files }, context) => __awaiter(void 0, void 0, void 0, function* () {
-        console.log(text, files);
-        const tweet = yield Tweet_1.default.create({ text, files, author_id: context.user.id });
-        yield User_1.default.findByIdAndUpdate(context.user.id, { $push: { tweets: tweet._id } });
-        return tweet;
+    createTweet: (_, { text, files, in_reply, in_reply_to }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(text, files, in_reply, in_reply_to);
+        let tweet;
+        if (in_reply && in_reply_to) {
+            const repling_to_tweet = yield Tweet_1.default.findById(in_reply_to);
+            if (!repling_to_tweet) {
+                throw new graphql_1.GraphQLError("Tweet not found");
+            }
+            tweet = yield Tweet_1.default.create({ text, files, author_id: context.user.id, in_reply, in_reply_to_tweet_id: in_reply_to, in_reply_to_user_id: repling_to_tweet.author_id });
+        }
+        else {
+            tweet = yield Tweet_1.default.create({ text, files, author_id: context.user.id });
+        }
+        const formated_tweet = yield (0, tweetSeivices_1.getTweetWithId)(tweet._id, context);
+        if (!formated_tweet) {
+            throw new graphql_1.GraphQLError("Something went wrong in createReply");
+        }
+        console.log(formated_tweet);
+        return formated_tweet;
     }),
     deleteTweet: (_, { tweetId }, context) => __awaiter(void 0, void 0, void 0, function* () {
         try {
@@ -45,96 +58,10 @@ const mutation = {
             in_reply: true,
             in_reply_to_user_id: repling_to
         });
-        const newReply = yield Tweet_1.default.aggregate([
-            {
-                $match: { _id: reply._id }
-            },
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'author_id',
-                    foreignField: '_id',
-                    as: 'author'
-                }
-            },
-            {
-                $addFields: {
-                    in_reply_to_username: {
-                        $arrayElemAt: ['$author.username', 0]
-                    },
-                    author_display_name: {
-                        $arrayElemAt: ['$author.name', 0]
-                    },
-                    author_username: {
-                        $arrayElemAt: ['$author.username', 0]
-                    },
-                    author_profile_image: {
-                        $arrayElemAt: ['$author.profileImageUrl', 0]
-                    },
-                    likeCount: { $size: "$likes" },
-                    isLiked: {
-                        $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$likes"]
-                    },
-                    replyCount: { $size: "$replies" },
-                    retweetCount: { $size: "$retweets" },
-                    isRetweeted: {
-                        $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweets"]
-                    },
-                    quotetweetCount: { $size: "$quotetweets" }
-                }
-            },
-            {
-                $project: {
-                    author: 0,
-                }
-            },
-            {
-                $lookup: {
-                    from: 'follows',
-                    let: {
-                        author_id: "$author_id",
-                    },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $in: [context.user.id, "$members"] },
-                                        { $eq: ["$author_id", "$$author_id"] },
-                                    ]
-                                }
-                            }
-                        }
-                    ],
-                    as: 'isFollowing'
-                }
-            },
-            {
-                $addFields: {
-                    isFollowing: { $cond: { if: { $gt: [{ $size: "$isFollowing" }, 0] }, then: true, else: false } }
-                }
-            },
-            {
-                $lookup: {
-                    from: 'bookmarks',
-                    localField: '_id',
-                    foreignField: 'tweet_id',
-                    as: 'bookmarks'
-                }
-            },
-            {
-                $addFields: {
-                    isBookmarked: {
-                        $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$bookmarks.user_id"]
-                    },
-                    bookmarkCount: { $size: "$bookmarks" }
-                }
-            },
-            {
-                $sort: { createdAt: -1 }
-            }
-        ]);
-        const formated_reply = (0, tweetSeivices_1.format_tweet_to_respose_format)(newReply[0]);
+        const formated_reply = yield (0, tweetSeivices_1.getTweetWithId)(reply._id, context);
+        if (!formated_reply) {
+            throw new graphql_1.GraphQLError("Something went wrong in createReply");
+        }
         console.log(formated_reply);
         return formated_reply;
     }),
@@ -187,7 +114,7 @@ const queries = {
             let response_tweet_array = [];
             for (const tweet_id of tweet_ids) {
                 console.log(tweet_id);
-                const tweet = yield (0, tweetSeivices_1.getTweets)(tweet_id._id, context);
+                const tweet = yield (0, tweetSeivices_1.getTweetWithId)(tweet_id._id, context);
                 console.log(tweet);
                 response_tweet_array.push(tweet);
             }
@@ -204,7 +131,7 @@ const queries = {
             let response_tweet_array = [];
             for (const tweet_id of tweet_ids) {
                 console.log(tweet_id);
-                const tweet = yield (0, tweetSeivices_1.getTweets)(tweet_id._id, context);
+                const tweet = yield (0, tweetSeivices_1.getTweetWithId)(tweet_id._id, context);
                 response_tweet_array.push(tweet);
             }
             console.log(response_tweet_array);
@@ -236,7 +163,7 @@ const queries = {
                     reply = super_array[reply_is_present.position[0]][reply_is_present.position[1]];
                 }
                 else {
-                    reply = yield (0, tweetSeivices_1.getTweets)(in_reply_to, context);
+                    reply = yield (0, tweetSeivices_1.getTweetWithId)(in_reply_to, context);
                     const obj = {
                         id: reply === null || reply === void 0 ? void 0 : reply._id,
                         position: [i, j]
@@ -264,7 +191,7 @@ const queries = {
     }),
     fetchSpecificTweet: (_, { tweetId }, context) => __awaiter(void 0, void 0, void 0, function* () {
         const tweet_id = new mongoose_1.default.Types.ObjectId(tweetId);
-        const tweet = yield (0, tweetSeivices_1.getTweets)(tweet_id, context);
+        const tweet = yield (0, tweetSeivices_1.getTweetWithId)(tweet_id, context);
         return tweet;
     }),
     fetchRepliesForSpecifivTweet: (_, { tweetId, offset }, context) => __awaiter(void 0, void 0, void 0, function* () {

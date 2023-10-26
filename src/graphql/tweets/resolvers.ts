@@ -1,25 +1,30 @@
 import mongoose from "mongoose";
 import Tweet from "../../models/Tweet";
 import { GraphQLError } from 'graphql';
-import User from "../../models/User";
-import { format_tweet_to_respose_format, getReplies, getTweets } from "../../services/tweetSeivices";
-import { get } from "https";
-import { chatObjectTypeDef, responeTypeDef } from "../../config/typeConfig";
+import { getReplies, getTweetWithId } from "../../services/tweetSeivices";
+import { responeTypeDef } from "../../config/typeConfig";
 import Likes from "../../models/Like";
 import Bookmarks from "../../models/Bookmark";
 
 const mutation = {
-  createTweet: async (_: any, { text, files }: { text: string | undefined, files: [string] | undefined }, context: any) => {
-    console.log(text, files)
-    const tweet = await Tweet.create({ text, files, author_id: context.user.id});
-    
-    await User.findByIdAndUpdate(
-      context.user.id,
-      { $push: { tweets: tweet._id } }
-    )
-    return tweet
-  },
+  createTweet: async (_: any, { text, files, in_reply, in_reply_to }: { text: string | undefined, files: [string] | undefined, in_reply: boolean, in_reply_to: string | null }, context: any) => {
+    console.log(text, files, in_reply, in_reply_to);
+    let tweet;
+    if(in_reply && in_reply_to) {
+      const repling_to_tweet = await Tweet.findById(in_reply_to);
+      if(!repling_to_tweet) {throw new GraphQLError("Tweet not found")}
+      tweet = await Tweet.create({ text, files, author_id: context.user.id, in_reply, in_reply_to_tweet_id: in_reply_to, in_reply_to_user_id: repling_to_tweet.author_id});
+    }
+    else {
+      tweet = await Tweet.create({ text, files, author_id: context.user.id});
+    }
 
+    const formated_tweet: responeTypeDef| null = await getTweetWithId(tweet._id, context)
+    if(!formated_tweet) { throw new GraphQLError("Something went wrong in createReply") }
+    console.log(formated_tweet)
+
+    return formated_tweet;
+  },
   deleteTweet: async (_: any, { tweetId }: { tweetId: string }, context: any) => {
     try {
       await Tweet.deleteOne({ _id: tweetId })
@@ -39,99 +44,8 @@ const mutation = {
         in_reply: true,
         in_reply_to_user_id: repling_to
     })
-
-    const newReply = await Tweet.aggregate([
-      {
-        $match: { _id: reply._id }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'author_id',
-          foreignField: '_id',
-          as: 'author'
-        }
-      },
-      {
-        $addFields: {
-          in_reply_to_username: {
-            $arrayElemAt: ['$author.username', 0]
-          },
-          author_display_name: {
-            $arrayElemAt: ['$author.name', 0]
-          },
-          author_username: {
-            $arrayElemAt: ['$author.username', 0]
-          },
-          author_profile_image: {
-            $arrayElemAt: ['$author.profileImageUrl', 0]
-          },
-          likeCount: { $size: "$likes" },
-          isLiked: {
-            $in: [new mongoose.Types.ObjectId(context.user.id), "$likes"]
-          },
-          replyCount: { $size: "$replies" },
-          retweetCount: { $size: "$retweets" },
-          isRetweeted: {
-            $in: [new mongoose.Types.ObjectId(context.user.id), "$retweets"]
-          },
-          quotetweetCount: { $size: "$quotetweets" }
-        }
-      },
-      {
-        $project: {
-          author: 0,
-        }
-      },
-      {
-        $lookup: {
-          from: 'follows',
-          let: {
-            author_id: "$author_id",
-          },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $in: [context.user.id, "$members"] },
-                    { $eq: ["$author_id", "$$author_id"] },
-                  ]
-                }
-              }
-            }
-          ],
-          as: 'isFollowing'
-        }
-      },
-      {
-        $addFields: {
-          isFollowing: { $cond: { if: { $gt: [{ $size: "$isFollowing" }, 0] }, then: true, else: false } }
-        }
-      },
-      {
-        $lookup: {
-          from: 'bookmarks',
-          localField: '_id',
-          foreignField: 'tweet_id',
-          as: 'bookmarks'
-        }
-      },
-      {
-        $addFields: {
-          isBookmarked: {
-            $in: [new mongoose.Types.ObjectId(context.user.id), "$bookmarks.user_id"]
-          },
-          bookmarkCount: { $size: "$bookmarks" }
-        }
-      },
-      {
-        $sort: { createdAt: -1 }
-      }
-    ]);
-
-    const formated_reply = format_tweet_to_respose_format(newReply[0]);
-
+    const formated_reply: responeTypeDef| null = await getTweetWithId(reply._id, context)
+    if(!formated_reply) { throw new GraphQLError("Something went wrong in createReply") }
     console.log(formated_reply)
     
     return formated_reply
@@ -190,7 +104,7 @@ const queries = {
 
       for(const tweet_id of tweet_ids) {
         console.log(tweet_id)
-        const tweet = await getTweets(tweet_id._id, context)
+        const tweet = await getTweetWithId(tweet_id._id, context)
         console.log(tweet)
         response_tweet_array.push(tweet)
       }
@@ -212,7 +126,7 @@ const queries = {
 
       for(const tweet_id of tweet_ids) {
         console.log(tweet_id)
-        const tweet = await getTweets(tweet_id._id, context)
+        const tweet = await getTweetWithId(tweet_id._id, context)
         
         response_tweet_array.push(tweet)
       }
@@ -257,7 +171,7 @@ const queries = {
         }
         else {
 
-          reply = await getTweets(in_reply_to, context)
+          reply = await getTweetWithId(in_reply_to, context)
 
           const obj = {
             id: reply?._id,
@@ -291,7 +205,7 @@ const queries = {
   
   fetchSpecificTweet: async (_: any, { tweetId }: { tweetId: string }, context: any) => {
     const tweet_id = new mongoose.Types.ObjectId(tweetId);
-    const tweet: responeTypeDef = await getTweets(tweet_id, context);
+    const tweet: responeTypeDef = await getTweetWithId(tweet_id, context);
     return tweet
   },
 
