@@ -5,7 +5,7 @@ import Tweet from "../models/Tweet"
 export const format_tweet_to_respose_format = (tweet: any): responeTypeDef => {
     console.log(tweet)
     const response_obj: responeTypeDef = {
-        _id: tweet._id,
+        _id:                     tweet._id,
         author_display_name:     tweet.author_display_name,
         author_username:         tweet.author_username,
         author_profile_image:    tweet.author_profile_image,
@@ -30,12 +30,12 @@ export const format_tweet_to_respose_format = (tweet: any): responeTypeDef => {
         bookmark_count:          tweet.bookmarkCount,
         is_blue:                 tweet.is_blue
     }
-    console.log(response_obj)
+    //console.log(response_obj)
     return response_obj
 }
 
 export const getTweetWithId = async ( tweet_id: mongoose.Types.ObjectId  | mongoose.Schema.Types.ObjectId, context: any ): Promise<responeTypeDef> => {
-
+    console.log("IN getTweetWithId");
     const tweet = await Tweet.aggregate([
         {
             $match: { _id: tweet_id }
@@ -63,14 +63,26 @@ export const getTweetWithId = async ( tweet_id: mongoose.Types.ObjectId  | mongo
                     $arrayElemAt: ['$author.profileImageUrl', 0]
                 },
                 replyCount: { $size: "$replies" },
-                retweetCount: { $size: "$retweets" },
-                isRetweeted: {
-                    $in: [new mongoose.Types.ObjectId(context.user.id), "$retweets"]
-                },
                 quotetweetCount: { $size: "$quotetweets" },
                 is_blue: {
                    $arrayElemAt: ['$author.blue', 0]
                 },
+            }
+        },
+        {
+            $lookup: {
+                from: "retweets",
+                localField: "_id",
+                foreignField: "tweet_id",
+                as: "retweets"
+            }
+        },
+        {
+            $addFields: {
+                retweetCount: { $size: "$retweets" },
+                isRetweeted: {
+                    $in: [new mongoose.Types.ObjectId(context.user.id), "$retweets.user_id"]
+                }
             }
         },
         {
@@ -133,11 +145,12 @@ export const getTweetWithId = async ( tweet_id: mongoose.Types.ObjectId  | mongo
         },
         {
             $project: {
-                author: 0
+                author: 0,
+                retweets: 0,
             }
         },
     ]);
-
+    //console.log(tweet)
     const formated_tweet: responeTypeDef = format_tweet_to_respose_format(tweet[0]);
     return formated_tweet
 }

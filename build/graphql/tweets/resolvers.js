@@ -19,6 +19,7 @@ const graphql_1 = require("graphql");
 const tweetSeivices_1 = require("../../services/tweetSeivices");
 const Like_1 = __importDefault(require("../../models/Like"));
 const Bookmark_1 = __importDefault(require("../../models/Bookmark"));
+const Retweet_1 = __importDefault(require("../../models/Retweet"));
 const mutation = {
     createTweet: (_, { text, files, in_reply, in_reply_to }, context) => __awaiter(void 0, void 0, void 0, function* () {
         console.log(text, files, in_reply, in_reply_to);
@@ -105,6 +106,28 @@ const mutation = {
             console.log(error);
             return false;
         }
+    }),
+    retweetTweet: (_, { tweetId }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            const retweet = yield Retweet_1.default.findOne({ tweet_id: tweetId, user_id: context.user.id });
+            if (retweet)
+                yield Retweet_1.default.create({ tweet_id: tweetId, user_id: context.user.id });
+            return true;
+        }
+        catch (error) {
+            console.log(error);
+            return false;
+        }
+    }),
+    unretweetTweet: (_, { tweetId }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            yield Retweet_1.default.deleteOne({ tweet_id: tweetId, user_id: context.user.id });
+            return true;
+        }
+        catch (error) {
+            console.log(error);
+            return false;
+        }
     })
 };
 const queries = {
@@ -113,9 +136,9 @@ const queries = {
             const tweet_ids = yield Tweet_1.default.find({ in_reply: false }).select("_id").sort({ createdAt: -1 });
             let response_tweet_array = [];
             for (const tweet_id of tweet_ids) {
-                console.log(tweet_id);
+                //console.log(tweet_id)
                 const tweet = yield (0, tweetSeivices_1.getTweetWithId)(tweet_id._id, context);
-                console.log(tweet);
+                //console.log(tweet)
                 response_tweet_array.push(tweet);
             }
             return response_tweet_array;
@@ -134,7 +157,7 @@ const queries = {
                 const tweet = yield (0, tweetSeivices_1.getTweetWithId)(tweet_id._id, context);
                 response_tweet_array.push(tweet);
             }
-            console.log(response_tweet_array);
+            //sconsole.log(response_tweet_array);
             return response_tweet_array;
         }
         catch (error) {

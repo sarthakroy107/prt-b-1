@@ -9,4 +9,6 @@ exports.Mutation = `#graphql
     unlikeTweet(tweetId: String!): Boolean!
     bookmarkTweet(tweetId: String!): Boolean!
     unbookmarkTweet(tweetId: String!): Boolean!
+    retweetTweet(tweetId: String!): Boolean!
+    unretweetTweet(tweetId: String!): Boolean!
 `;

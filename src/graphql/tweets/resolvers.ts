@@ -5,6 +5,7 @@ import { getReplies, getTweetWithId } from "../../services/tweetSeivices";
 import { responeTypeDef } from "../../config/typeConfig";
 import Likes from "../../models/Like";
 import Bookmarks from "../../models/Bookmark";
+import Retweet from "../../models/Retweet";
 
 const mutation = {
   createTweet: async (_: any, { text, files, in_reply, in_reply_to }: { text: string | undefined, files: [string] | undefined, in_reply: boolean, in_reply_to: string | null }, context: any) => {
@@ -91,7 +92,30 @@ const mutation = {
       console.log(error)
       return false
     }
+  },
+
+  retweetTweet: async (_: any, { tweetId }: { tweetId: string }, context: any) => {
+    try {
+      const retweet = await Retweet.findOne({ tweet_id: tweetId, user_id: context.user.id })
+      if(retweet) await Retweet.create({ tweet_id: tweetId, user_id: context.user.id });
+      return true
+    } catch (error) {
+      console.log(error)
+      return false
+    }
+  },
+
+  unretweetTweet: async (_: any, { tweetId }: { tweetId: string }, context: any) => {
+    try {
+      await Retweet.deleteOne({ tweet_id: tweetId, user_id: context.user.id })
+      return true
+    }
+    catch (error) {
+      console.log(error)
+      return false
+    }
   }
+
 }
 
 const queries = {
@@ -103,9 +127,9 @@ const queries = {
       let response_tweet_array = [];
 
       for(const tweet_id of tweet_ids) {
-        console.log(tweet_id)
+        //console.log(tweet_id)
         const tweet = await getTweetWithId(tweet_id._id, context)
-        console.log(tweet)
+        //console.log(tweet)
         response_tweet_array.push(tweet)
       }
 
@@ -131,7 +155,7 @@ const queries = {
         response_tweet_array.push(tweet)
       }
 
-      console.log(response_tweet_array);
+      //sconsole.log(response_tweet_array);
 
       return response_tweet_array
 

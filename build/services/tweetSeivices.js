@@ -43,11 +43,12 @@ const format_tweet_to_respose_format = (tweet) => {
         bookmark_count: tweet.bookmarkCount,
         is_blue: tweet.is_blue
     };
-    console.log(response_obj);
+    //console.log(response_obj)
     return response_obj;
 };
 exports.format_tweet_to_respose_format = format_tweet_to_respose_format;
 const getTweetWithId = (tweet_id, context) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("IN getTweetWithId");
     const tweet = yield Tweet_1.default.aggregate([
         {
             $match: { _id: tweet_id }
@@ -75,14 +76,26 @@ const getTweetWithId = (tweet_id, context) => __awaiter(void 0, void 0, void 0, 
                     $arrayElemAt: ['$author.profileImageUrl', 0]
                 },
                 replyCount: { $size: "$replies" },
-                retweetCount: { $size: "$retweets" },
-                isRetweeted: {
-                    $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweets"]
-                },
                 quotetweetCount: { $size: "$quotetweets" },
                 is_blue: {
                     $arrayElemAt: ['$author.blue', 0]
                 },
+            }
+        },
+        {
+            $lookup: {
+                from: "retweets",
+                localField: "_id",
+                foreignField: "tweet_id",
+                as: "retweets"
+            }
+        },
+        {
+            $addFields: {
+                retweetCount: { $size: "$retweets" },
+                isRetweeted: {
+                    $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweets.user_id"]
+                }
             }
         },
         {
@@ -145,10 +158,12 @@ const getTweetWithId = (tweet_id, context) => __awaiter(void 0, void 0, void 0, 
         },
         {
             $project: {
-                author: 0
+                author: 0,
+                retweets: 0,
             }
         },
     ]);
+    //console.log(tweet)
     const formated_tweet = (0, exports.format_tweet_to_respose_format)(tweet[0]);
     return formated_tweet;
 });

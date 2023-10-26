@@ -19,6 +19,7 @@ export const format_user_details = (user: any): userType => {
     }
     return object;
 }
+
 export const getUser = async (username: string |null = null, email: string | null = null) => {
     console.log("username->", username)
     console.log("email->", email)
