@@ -223,5 +223,17 @@ const queries = {
         console.log(replies);
         return replies;
     }),
+    fetchSearchData: (_, { q, s }, context) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(q, s);
+        if (!s)
+            s = "top";
+        let formated_tweets = [];
+        formated_tweets = yield (0, tweetSeivices_1.getSearchResults)(q, s, context);
+        if (formated_tweets.length === 0)
+            return [];
+        if (s === "media")
+            formated_tweets.filter(tweet => tweet.files.length > 0);
+        return formated_tweets;
+    })
 };
 exports.TweetResolver = { mutation, queries };

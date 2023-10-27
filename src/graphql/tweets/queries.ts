@@ -4,5 +4,6 @@ export const Queries = `#graphql
     fetchAllTweets: [TweetCard]
     fetchSpecificTweet(tweetId: String!): TweetCard!
     fetchRepliesForSpecifivTweet(tweetId: String!, offset: Int!): [[TweetCard]]
+    fetchSearchData(q: String!, s: String): [TweetCard]!
 
 `

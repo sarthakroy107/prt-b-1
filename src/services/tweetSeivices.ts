@@ -5,12 +5,13 @@ import Tweet from "../models/Tweet"
 export const format_tweet_to_respose_format = (tweet: any): responeTypeDef => {
     console.log(tweet)
     const response_obj: responeTypeDef = {
+
         _id:                     tweet._id,
         author_display_name:     tweet.author_display_name,
         author_username:         tweet.author_username,
         author_profile_image:    tweet.author_profile_image,
         text:                    tweet.text,
-        files:                   tweet.files,
+        files:                   tweet.files === null || undefined ? [] : tweet.files,
         is_liked:                tweet.isLiked,
         like_count:              tweet.likeCount,
         is_retweeted:            tweet.isRetweeted,
@@ -28,10 +29,10 @@ export const format_tweet_to_respose_format = (tweet: any): responeTypeDef => {
         is_following:            tweet.isFollowing,
         is_bookmarked:           tweet.isBookmarked,
         bookmark_count:          tweet.bookmarkCount,
-        is_blue:                 tweet.is_blue
+        is_blue:                 tweet.is_blue,
     }
-    //console.log(response_obj)
-    return response_obj
+    
+    return response_obj;
 }
 
 export const getTweetWithId = async ( tweet_id: mongoose.Types.ObjectId  | mongoose.Schema.Types.ObjectId, context: any ): Promise<responeTypeDef> => {
@@ -150,9 +151,9 @@ export const getTweetWithId = async ( tweet_id: mongoose.Types.ObjectId  | mongo
             }
         },
     ]);
-    //console.log(tweet)
+    
     const formated_tweet: responeTypeDef = format_tweet_to_respose_format(tweet[0]);
-    return formated_tweet
+    return formated_tweet;
 }
 
 export const getReplies = async ( tweet_id: mongoose.Types.ObjectId  | mongoose.Schema.Types.ObjectId, context: any ): Promise<responeTypeDef[][]> => {
@@ -351,4 +352,133 @@ export const getReplies = async ( tweet_id: mongoose.Types.ObjectId  | mongoose.
     }
 
     return replies_arr;
+}
+
+export const getSearchResults = async ( search: string, sort: string, context: any ): Promise<responeTypeDef[]> => {
+
+    const pipeline1: any[] = [
+    {
+        $search: {
+          index: "tweetTextSearch",
+          text: {
+            query: search,
+            path: ["text"],
+            fuzzy: {
+              maxEdits: 2,
+              maxExpansions: 100
+            },
+          }
+        }
+    },
+    {
+        $lookup: {
+            from: 'users',
+            localField: 'author_id',
+            foreignField: '_id',
+            as: 'author'
+        }
+    },
+    {
+        $addFields: {
+            in_reply_to_username: {
+                $arrayElemAt: ['$author.username', 0]
+            },
+            author_display_name: {
+                $arrayElemAt: ['$author.name', 0]
+            },
+            author_username: {
+                $arrayElemAt: ['$author.username', 0]
+            },
+            author_profile_image: {
+                $arrayElemAt: ['$author.profileImageUrl', 0]
+            },
+            replyCount: { $size: "$replies" },
+            retweetCount: { $size: "$retweets" },
+            is_blue: {
+                $arrayElemAt: ['$author.blue', 0]
+            },
+            isRetweeted: {
+                $in: [new mongoose.Types.ObjectId(context.user.id), "$retweets"]
+            },
+            quotetweetCount: { $size: "$quotetweets" }
+        }
+    },
+    {
+        $lookup: {
+            from: 'follows',
+            localField: 'author_id',
+            foreignField: 'following',
+            as: 'following'
+        }
+    },
+    {
+        $addFields: {
+            isFollowing: {
+                $in: [new mongoose.Types.ObjectId(context.user.id), "$following.follower"]
+            }
+        }
+    },
+    {
+        $lookup: {
+            from: 'bookmarks',
+            localField: '_id',
+            foreignField: 'tweet_id',
+            as: 'bookmarks'
+        }
+    },
+    {
+        $addFields: {
+            isBookmarked: {
+                $in: [new mongoose.Types.ObjectId(context.user.id), "$bookmarks.user_id"]
+            },
+            bookmarkCount: { $size: "$bookmarks" }
+        }
+    },
+    {
+        $lookup: {
+            from: 'likes',
+            localField: '_id',
+            foreignField: 'tweet_id',
+            as: 'likes'
+        }
+    },
+    {
+        $addFields: {
+            isLiked: {
+                $in: [new mongoose.Types.ObjectId(context.user.id), "$likes.user_id"]
+            },
+            likeCount: { $size: "$likes" }
+        }
+    },
+    {
+        $project: {
+            author: 0,
+            bookmarks: 0,
+            likes: 0,
+        }
+    },
+    ]
+
+    let response_tweets: responeTypeDef[] = [];
+
+    try {
+        let tweets;
+
+        if(sort === "latest") {
+            tweets = await Tweet.aggregate(pipeline1).sort({ createdAt: -1 });
+        }else {
+            tweets = await Tweet.aggregate(pipeline1).sort({ likeCount: -1, replyCount: -1, createdAt: -1 });
+        }
+        if(tweets.length === 0) return []
+
+        for(const tweet of tweets) {
+            const formated_tweet = format_tweet_to_respose_format(tweet);
+            response_tweets.push(formated_tweet);
+        }
+
+    } catch (error) {
+        console.log(error)
+    }
+    
+    return response_tweets;
 }

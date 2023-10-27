@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReplies = exports.getTweetWithId = exports.format_tweet_to_respose_format = void 0;
+exports.getSearchResults = exports.getReplies = exports.getTweetWithId = exports.format_tweet_to_respose_format = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const Tweet_1 = __importDefault(require("../models/Tweet"));
 const format_tweet_to_respose_format = (tweet) => {
@@ -23,7 +23,7 @@ const format_tweet_to_respose_format = (tweet) => {
         author_username: tweet.author_username,
         author_profile_image: tweet.author_profile_image,
         text: tweet.text,
-        files: tweet.files,
+        files: tweet.files === null || undefined ? [] : tweet.files,
         is_liked: tweet.isLiked,
         like_count: tweet.likeCount,
         is_retweeted: tweet.isRetweeted,
@@ -41,9 +41,8 @@ const format_tweet_to_respose_format = (tweet) => {
         is_following: tweet.isFollowing,
         is_bookmarked: tweet.isBookmarked,
         bookmark_count: tweet.bookmarkCount,
-        is_blue: tweet.is_blue
+        is_blue: tweet.is_blue,
     };
-    //console.log(response_obj)
     return response_obj;
 };
 exports.format_tweet_to_respose_format = format_tweet_to_respose_format;
@@ -163,7 +162,6 @@ const getTweetWithId = (tweet_id, context) => __awaiter(void 0, void 0, void 0, 
             }
         },
     ]);
-    //console.log(tweet)
     const formated_tweet = (0, exports.format_tweet_to_respose_format)(tweet[0]);
     return formated_tweet;
 });
@@ -361,3 +359,128 @@ const getReplies = (tweet_id, context) => __awaiter(void 0, void 0, void 0, func
     return replies_arr;
 });
 exports.getReplies = getReplies;
+const getSearchResults = (search, sort, context) => __awaiter(void 0, void 0, void 0, function* () {
+    const pipeline1 = [
+        {
+            $search: {
+                index: "tweetTextSearch",
+                text: {
+                    query: search,
+                    path: ["text"],
+                    fuzzy: {
+                        maxEdits: 2,
+                        maxExpansions: 100
+                    },
+                }
+            }
+        },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'author_id',
+                foreignField: '_id',
+                as: 'author'
+            }
+        },
+        {
+            $addFields: {
+                in_reply_to_username: {
+                    $arrayElemAt: ['$author.username', 0]
+                },
+                author_display_name: {
+                    $arrayElemAt: ['$author.name', 0]
+                },
+                author_username: {
+                    $arrayElemAt: ['$author.username', 0]
+                },
+                author_profile_image: {
+                    $arrayElemAt: ['$author.profileImageUrl', 0]
+                },
+                replyCount: { $size: "$replies" },
+                retweetCount: { $size: "$retweets" },
+                is_blue: {
+                    $arrayElemAt: ['$author.blue', 0]
+                },
+                isRetweeted: {
+                    $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$retweets"]
+                },
+                quotetweetCount: { $size: "$quotetweets" }
+            }
+        },
+        {
+            $lookup: {
+                from: 'follows',
+                localField: 'author_id',
+                foreignField: 'following',
+                as: 'following'
+            }
+        },
+        {
+            $addFields: {
+                isFollowing: {
+                    $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$following.follower"]
+                }
+            }
+        },
+        {
+            $lookup: {
+                from: 'bookmarks',
+                localField: '_id',
+                foreignField: 'tweet_id',
+                as: 'bookmarks'
+            }
+        },
+        {
+            $addFields: {
+                isBookmarked: {
+                    $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$bookmarks.user_id"]
+                },
+                bookmarkCount: { $size: "$bookmarks" }
+            }
+        },
+        {
+            $lookup: {
+                from: 'likes',
+                localField: '_id',
+                foreignField: 'tweet_id',
+                as: 'likes'
+            }
+        },
+        {
+            $addFields: {
+                isLiked: {
+                    $in: [new mongoose_1.default.Types.ObjectId(context.user.id), "$likes.user_id"]
+                },
+                likeCount: { $size: "$likes" }
+            }
+        },
+        {
+            $project: {
+                author: 0,
+                bookmarks: 0,
+                likes: 0,
+            }
+        },
+    ];
+    let response_tweets = [];
+    try {
+        let tweets;
+        if (sort === "latest") {
+            tweets = yield Tweet_1.default.aggregate(pipeline1).sort({ createdAt: -1 });
+        }
+        else {
+            tweets = yield Tweet_1.default.aggregate(pipeline1).sort({ likeCount: -1, replyCount: -1, createdAt: -1 });
+        }
+        if (tweets.length === 0)
+            return [];
+        for (const tweet of tweets) {
+            const formated_tweet = (0, exports.format_tweet_to_respose_format)(tweet);
+            response_tweets.push(formated_tweet);
+        }
+    }
+    catch (error) {
+        console.log(error);
+    }
+    return response_tweets;
+});
+exports.getSearchResults = getSearchResults;

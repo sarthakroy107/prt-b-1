@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
 import Tweet from "../../models/Tweet";
 import { GraphQLError } from 'graphql';
-import { getReplies, getTweetWithId } from "../../services/tweetSeivices";
+import { getReplies, getSearchResults, getTweetWithId } from "../../services/tweetSeivices";
 import { responeTypeDef } from "../../config/typeConfig";
 import Likes from "../../models/Like";
 import Bookmarks from "../../models/Bookmark";
 import Retweet from "../../models/Retweet";
 
 const mutation = {
+
   createTweet: async (_: any, { text, files, in_reply, in_reply_to }: { text: string | undefined, files: [string] | undefined, in_reply: boolean, in_reply_to: string | null }, context: any) => {
     console.log(text, files, in_reply, in_reply_to);
     let tweet;
@@ -26,6 +27,7 @@ const mutation = {
 
     return formated_tweet;
   },
+
   deleteTweet: async (_: any, { tweetId }: { tweetId: string }, context: any) => {
     try {
       await Tweet.deleteOne({ _id: tweetId })
@@ -239,6 +241,20 @@ const queries = {
     console.log(replies)
     return replies;
   },
+
+  fetchSearchData: async (_: any, { q, s }: { q: string, s: string | undefined }, context: any) => {
+    console.log(q, s);
+    if(!s) s = "top";
+    let formated_tweets: responeTypeDef[] = [];
+
+    formated_tweets = await getSearchResults(q, s, context);
+
+    if(formated_tweets.length === 0) return [];
+
+    if(s === "media") formated_tweets.filter(tweet => tweet.files.length > 0);
+
+    return formated_tweets;
+  }
 }
 
 export const TweetResolver = { mutation, queries }
