@@ -254,7 +254,7 @@ const queries = {
     if(s === "media") formated_tweets.filter(tweet => tweet.files.length > 0);
 
     return formated_tweets;
-  }
+  },
 }
 
 export const TweetResolver = { mutation, queries }
