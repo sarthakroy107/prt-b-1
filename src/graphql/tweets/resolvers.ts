@@ -255,6 +255,7 @@ const queries = {
 
     return formated_tweets;
   },
+  
 }
 
 export const TweetResolver = { mutation, queries }
