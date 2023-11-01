@@ -22,21 +22,21 @@ const tweetSchema = new mongoose_1.default.Schema({
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: "User",
         }],
-    retweets: [{
-            type: mongoose_1.default.Schema.Types.ObjectId,
-            ref: "User",
-        }],
-    replies: [{
-            type: mongoose_1.default.Schema.Types.ObjectId,
-            ref: "User",
-        }],
-    quotetweets: [{
-            type: mongoose_1.default.Schema.Types.ObjectId,
-            ref: "User",
-        }],
-    hashtags: [{
-            type: mongoose_1.default.Schema.Types.ObjectId,
-        }],
+    // retweets: [{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "User",
+    // }],
+    // replies: [{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "User",
+    // }],
+    // quotetweets: [{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "User",
+    // }],
+    // hashtags: [{
+    //     type: mongoose.Schema.Types.ObjectId,
+    // }],
     in_reply: {
         type: Boolean,
         default: false,

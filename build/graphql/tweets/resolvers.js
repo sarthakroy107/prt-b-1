@@ -128,7 +128,7 @@ const mutation = {
             console.log(error);
             return false;
         }
-    })
+    }),
 };
 const queries = {
     fetchAllTweets: (_, p, context) => __awaiter(void 0, void 0, void 0, function* () {
@@ -234,6 +234,6 @@ const queries = {
         if (s === "media")
             formated_tweets.filter(tweet => tweet.files.length > 0);
         return formated_tweets;
-    })
+    }),
 };
 exports.TweetResolver = { mutation, queries };

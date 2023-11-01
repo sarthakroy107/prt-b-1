@@ -116,7 +116,7 @@ const mutation = {
       console.log(error)
       return false
     }
-  }
+  },
 
 }
 
